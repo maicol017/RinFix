@@ -22,4 +22,10 @@ object Servicios {
     val cuentas: ServicioCuentas by lazy {
         CuentasDeEjemplo(checkNotNull(preferencias) { "Falta llamar a Servicios.iniciar() en MainActivity." })
     }
+
+    val ordenes: ServicioOrdenes by lazy { OrdenesDeEjemplo() }
+
+    val garaje: ServicioGaraje by lazy { GarajeDeEjemplo() }
+
+    val analisis: ServicioAnalisis by lazy { AnalisisDeEjemplo() }
 }
