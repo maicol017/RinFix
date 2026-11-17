@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Modelos y datos de ml/ (pesados, se guardan en Drive)
+ml/models/
+ml/datos/
+ml/descargas/
+ml/runs/
+ml/**/*.pt
+ml/**/*.tflite
+kaggle.json
