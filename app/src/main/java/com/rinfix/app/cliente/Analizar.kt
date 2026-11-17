@@ -73,6 +73,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -256,7 +257,7 @@ fun PantallaAnalizar(
                     BotonSobreCamara(icono = Iconos.Cerrar, descripcion = "Cerrar cámara", alPulsar = alCerrar)
                     Text(
                         text = "Foto del rin",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(shadow = SombraTexto),
                         color = Colores.Crema,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f),
@@ -307,6 +308,14 @@ fun PantallaAnalizar(
 
 /** Cuánto se monta el panel blanco sobre la imagen de la cámara. */
 private val SolapePanel = 30.dp
+
+/**
+ * Vidrio oscuro para lo que va encima de la imagen en vivo: se lee igual sobre una pared
+ * blanca que sobre un garaje oscuro.
+ */
+private val FondoSobreCamara = Colores.Tinta.copy(alpha = 0.5f)
+
+private val SombraTexto = Shadow(color = Color.Black.copy(alpha = 0.55f), blurRadius = 10f)
 
 // ---------- Sobre la cámara ----------
 
@@ -367,7 +376,11 @@ private fun Guia(listo: Boolean, modifier: Modifier = Modifier) {
             text = "Centra el rin en el círculo, a unos 50 cm",
             style = MaterialTheme.typography.bodySmall,
             color = Colores.Crema,
-            modifier = Modifier.padding(top = 10.dp),
+            modifier = Modifier
+                .padding(top = 10.dp)
+                .clip(Formas.Pildora)
+                .background(FondoSobreCamara)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
         )
     }
 }
@@ -380,7 +393,7 @@ private fun BotonSobreCamara(
     activo: Boolean = false,
 ) {
     val fondo by animateColorAsState(
-        targetValue = if (activo) Colores.Menta else Color.White.copy(alpha = 0.12f),
+        targetValue = if (activo) Colores.Menta else FondoSobreCamara,
         label = "fondo del botón",
     )
     Box(
@@ -409,7 +422,7 @@ private fun ChipLuz(luz: Luz) {
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
             .clip(Formas.Pildora)
-            .background(Color.White.copy(alpha = 0.14f))
+            .background(FondoSobreCamara)
             .border(1.dp, Color.White.copy(alpha = 0.18f), Formas.Pildora)
             .height(28.dp)
             .padding(horizontal = 11.dp)
