@@ -3,6 +3,7 @@ package com.rinfix.app.datos
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -18,6 +19,8 @@ object Formato {
     private val formatoDiaCorto = DateTimeFormatter.ofPattern("d MMM", Colombia)
     private val formatoDiaSemana = DateTimeFormatter.ofPattern("EEE d", Colombia)
     private val formatoHora = DateTimeFormatter.ofPattern("h:mm a", Colombia)
+    private val formatoSemanaCorta = DateTimeFormatter.ofPattern("EEE", Colombia)
+    private val formatoMesCorto = DateTimeFormatter.ofPattern("MMM", Colombia)
 
     /** $210.000 */
     fun pesos(valor: Long): String = "$" + "%,d".format(Colombia, valor)
@@ -38,6 +41,15 @@ object Formato {
 
     /** 4:00 p. m. */
     fun hora(fecha: LocalDateTime): String = formatoHora.format(fecha)
+
+    /** 9:00 a. m. */
+    fun hora(hora: LocalTime): String = formatoHora.format(hora)
+
+    /** Mié */
+    fun diaSemanaCorto(fecha: LocalDate): String = formatoSemanaCorta.format(fecha).sinPuntos().conMayuscula()
+
+    /** nov */
+    fun mesCorto(fecha: LocalDate): String = formatoMesCorto.format(fecha).sinPuntos()
 
     /** Hoy, 4:00 p. m. · Mañana, 9:00 a. m. · Jue 19, 4:00 p. m. */
     fun diaYHora(fecha: LocalDateTime, hoy: LocalDate = LocalDate.now()): String {

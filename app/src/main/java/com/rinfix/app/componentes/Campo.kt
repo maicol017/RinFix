@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -99,6 +100,7 @@ fun Campo(
     accionesTeclado: KeyboardActions = KeyboardActions.Default,
     tipoContenido: ContentType? = null,
     habilitado: Boolean = true,
+    lineas: Int = 1,
 ) {
     val interaccion = remember { MutableInteractionSource() }
     val enfocado by interaccion.collectIsFocusedAsState()
@@ -167,7 +169,9 @@ fun Campo(
             value = valor,
             onValueChange = alCambiar,
             enabled = habilitado,
-            singleLine = true,
+            singleLine = lineas == 1,
+            minLines = lineas,
+            maxLines = if (lineas == 1) 1 else lineas + 3,
             interactionSource = interaccion,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = Colores.Tinta),
             cursorBrush = SolidColor(Colores.Tinta),
@@ -188,11 +192,11 @@ fun Campo(
                 },
             decorationBox = { campo ->
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = if (lineas == 1) Alignment.CenterVertically else Alignment.Top,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .then(if (lineas == 1) Modifier.height(56.dp) else Modifier.heightIn(min = 56.dp))
                         .drawBehind {
                             // Halo de 4 dp por fuera del campo
                             val halo = 4.dp.toPx()
@@ -205,7 +209,7 @@ fun Campo(
                         }
                         .background(fondoCampo, Formas.Campo)
                         .border(1.5.dp, colorBorde, Formas.Campo)
-                        .padding(horizontal = 14.dp),
+                        .padding(horizontal = 14.dp, vertical = if (lineas == 1) 0.dp else 14.dp),
                 ) {
                     if (icono != null) {
                         Icon(
@@ -221,7 +225,7 @@ fun Campo(
                                 text = marcador,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Colores.Tinta3,
-                                maxLines = 1,
+                                maxLines = lineas,
                             )
                         }
                         campo()

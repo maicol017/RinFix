@@ -1,6 +1,9 @@
 package com.rinfix.app.datos
 
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +21,7 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
 
     private val todas = MutableStateFlow(ordenesIniciales(ahora))
     private val avisos = MutableStateFlow(notificacionesIniciales(ahora))
+    private var siguienteCodigo = 1046
 
     override fun ordenes(usuario: Usuario): Flow<List<Orden>> = todas.map { lista ->
         lista
@@ -41,9 +45,83 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
         }
     }
 
+    override suspend fun horasDisponibles(fecha: LocalDate): List<Horario> {
+        delay(300)
+        val ahora = LocalDateTime.now()
+        val horas = if (fecha.dayOfWeek == DayOfWeek.SATURDAY) HorasSabado else HorasSemana
+        return horas.map { hora ->
+            // Ocupadas de ejemplo: cambian con el día para que la agenda no se vea siempre igual.
+            val ocupada = (fecha.dayOfMonth + hora.hour) % 3 == 0
+            // Hoy, solo con al menos 2 horas de anticipación.
+            val pasada = fecha.atTime(hora).isBefore(ahora.plusHours(2))
+            Horario(hora, disponible = !ocupada && !pasada && fecha.dayOfWeek != DayOfWeek.SUNDAY)
+        }
+    }
+
+    override suspend fun solicitar(usuario: Usuario, solicitud: SolicitudReparacion): Orden {
+        delay(900)
+        val ahora = LocalDateTime.now()
+        val codigo = "RF-${siguienteCodigo++}"
+        val orden = Orden(
+            id = "orden-${codigo.removePrefix("RF-")}",
+            codigo = codigo,
+            clienteId = usuario.id,
+            cliente = usuario.nombre,
+            vehiculo = solicitud.vehiculo,
+            rin = solicitud.posicion.descripcion,
+            servicio = solicitud.servicio,
+            taller = Taller,
+            tecnico = null,
+            etapa = EtapaOrden.Solicitud,
+            detalleEtapa = "Ingreso agendado",
+            creada = ahora,
+            entregaEstimada = null,
+            total = null,
+            pagada = false,
+            diagnosticoId = solicitud.idDiagnostico,
+            cita = solicitud.cita,
+            notas = solicitud.notas.ifBlank { null },
+            avances = listOf(
+                Avance(
+                    etapa = EtapaOrden.Solicitud,
+                    fecha = ahora,
+                    nota = "Solicitud enviada desde la app. Ingreso agendado para " +
+                        "${Formato.diaYHora(solicitud.cita).replaceFirstChar { it.lowercase() }}.",
+                ),
+            ),
+        )
+        todas.update { it + orden }
+        avisos.update { lista ->
+            lista + Notificacion(
+                id = "aviso-${orden.id}-cliente",
+                usuarioId = usuario.id,
+                tipo = TipoNotificacion.Avance,
+                titulo = "El taller recibió tu solicitud",
+                detalle = "${orden.codigo}, ${orden.vehiculo}",
+                fecha = ahora,
+                leida = false,
+                ordenId = orden.id,
+            ) + Notificacion(
+                id = "aviso-${orden.id}-taller",
+                usuarioId = "taller-1",
+                tipo = TipoNotificacion.Avance,
+                titulo = "Nueva solicitud ${orden.codigo}",
+                detalle = "${orden.vehiculo}, ${usuario.nombre}",
+                fecha = ahora,
+                leida = false,
+                ordenId = orden.id,
+            )
+        }
+        return orden
+    }
+
     internal companion object {
 
         const val Taller = "Taller RinFix Cabecera"
+
+        /** Horas para recibir rines: de lunes a viernes mañana y tarde; sábados solo en la mañana. */
+        val HorasSemana: List<LocalTime> = listOf(8, 9, 10, 11, 14, 15, 16, 17).map { LocalTime.of(it, 0) }
+        val HorasSabado: List<LocalTime> = listOf(8, 9, 10, 11).map { LocalTime.of(it, 0) }
 
         fun ordenesIniciales(ahora: LocalDateTime): List<Orden> {
             val hoy = ahora.toLocalDate()

@@ -24,6 +24,21 @@ enum class EtapaOrden(val titulo: String, val estado: String) {
     }
 }
 
+/** Cuál rin del carro se va a reparar. */
+enum class PosicionRin(val nombre: String) {
+    DelanteroIzquierdo("Delantero izquierdo"),
+    DelanteroDerecho("Delantero derecho"),
+    TraseroIzquierdo("Trasero izquierdo"),
+    TraseroDerecho("Trasero derecho"),
+    Repuesto("Repuesto"),
+    Varios("Varios rines"),
+    ;
+
+    /** «rin delantero izquierdo» o «varios rines», para mostrar junto al vehículo. */
+    val descripcion: String
+        get() = if (this == Varios) "varios rines" else "rin ${nombre.lowercase()}"
+}
+
 /** Cuándo se tomó una foto del proceso. */
 enum class MomentoFoto(val nombre: String) {
     Antes("Antes"),
@@ -76,6 +91,10 @@ data class Orden(
     val pagada: Boolean,
     val avances: List<Avance>,
     val diagnosticoId: String? = null,
+    /** Fecha y hora en que el cliente lleva el rin al taller. */
+    val cita: LocalDateTime? = null,
+    /** Lo que el cliente le contó al taller al pedir la reparación. */
+    val notas: String? = null,
 ) {
     val activa: Boolean get() = etapa != EtapaOrden.Entregada
 

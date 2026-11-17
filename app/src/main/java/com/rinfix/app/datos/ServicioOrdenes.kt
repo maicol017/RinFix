@@ -1,6 +1,26 @@
 package com.rinfix.app.datos
 
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
+
+/** Lo que el cliente pide al solicitar una reparación o una revisión. */
+data class SolicitudReparacion(
+    /** Diagnóstico del que sale la solicitud; `null` si es una revisión sin análisis. */
+    val idDiagnostico: String?,
+    /** «Mazda 3 2021» */
+    val vehiculo: String,
+    val posicion: PosicionRin,
+    /** Servicio principal: «Reparación de rayones y pintura» o «Revisión en el taller». */
+    val servicio: String,
+    /** Cuándo lleva el rin al taller. */
+    val cita: LocalDateTime,
+    val notas: String,
+)
+
+/** Una hora del día para llevar el rin, libre u ocupada. */
+data class Horario(val hora: LocalTime, val disponible: Boolean)
 
 /**
  * Órdenes de reparación y sus avisos.
@@ -19,4 +39,10 @@ interface ServicioOrdenes {
     fun notificaciones(usuario: Usuario): Flow<List<Notificacion>>
 
     suspend fun marcarNotificacionesLeidas(usuario: Usuario)
+
+    /** Horas del taller para recibir el rin ese día, con las que ya están ocupadas. */
+    suspend fun horasDisponibles(fecha: LocalDate): List<Horario>
+
+    /** Crea la orden con la etapa «Solicitud recibida» y avisa al taller. */
+    suspend fun solicitar(usuario: Usuario, solicitud: SolicitudReparacion): Orden
 }
