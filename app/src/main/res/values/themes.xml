@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.RinFix" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Fondo crema desde el primer instante, para que no aparezca un destello blanco al abrir. -->
+    <style name="Theme.RinFix" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/crema</item>
+    </style>
 </resources>
