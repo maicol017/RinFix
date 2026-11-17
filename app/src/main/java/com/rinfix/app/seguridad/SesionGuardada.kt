@@ -12,6 +12,9 @@ import androidx.core.content.edit
  * Así el candado queda atado a esa cuenta, y una huella registrada después en el teléfono
  * no sirve, porque Android anula la llave.
  *
+ * El id del dueño también se guarda sin cifrar, solo para saber de qué cuenta es el candado
+ * sin pedir la huella (un id no es un secreto).
+ *
  * Aquí nunca se guarda nada biométrico: eso lo maneja Android.
  */
 class SesionGuardada(contexto: Context) {
@@ -20,8 +23,9 @@ class SesionGuardada(contexto: Context) {
 
     private val preferencias = contexto.getSharedPreferences("rinfix_seguridad", Context.MODE_PRIVATE)
 
-    fun guardar(cifrado: ByteArray, vectorInicial: ByteArray) {
+    fun guardar(dueno: String, cifrado: ByteArray, vectorInicial: ByteArray) {
         preferencias.edit {
+            putString(DUENO, dueno)
             putString(CIFRADO, Base64.encodeToString(cifrado, Base64.NO_WRAP))
             putString(VECTOR, Base64.encodeToString(vectorInicial, Base64.NO_WRAP))
         }
@@ -33,11 +37,15 @@ class SesionGuardada(contexto: Context) {
         return Candado(Base64.decode(cifrado, Base64.NO_WRAP), Base64.decode(vector, Base64.NO_WRAP))
     }
 
+    /** Id del usuario que activó el candado, o `null` si no hay. */
+    fun dueno(): String? = preferencias.getString(DUENO, null)
+
     /** `true` si la persona activó el desbloqueo con huella. */
     fun existe(): Boolean = preferencias.contains(CIFRADO)
 
     fun borrar() {
         preferencias.edit {
+            remove(DUENO)
             remove(CIFRADO)
             remove(VECTOR)
         }
@@ -51,6 +59,7 @@ class SesionGuardada(contexto: Context) {
     }
 
     private companion object {
+        const val DUENO = "candado_dueno"
         const val CIFRADO = "candado_cifrado"
         const val VECTOR = "candado_vector"
         const val OFRECIDA = "huella_ofrecida_"

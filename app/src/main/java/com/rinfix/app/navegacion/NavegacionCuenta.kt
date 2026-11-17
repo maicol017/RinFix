@@ -7,7 +7,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.collectAsState
@@ -34,11 +38,22 @@ private val CurvaSuave = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 /**
  * Navegación de cuenta: Bienvenida → Iniciar sesión, Registro o Código de taller.
  * Cuando alguien entra con éxito, la app cambia sola a la navegación de su rol.
+ *
+ * Con `correoSugerido` (viene de «Usar contraseña» en el desbloqueo) abre directo
+ * «Iniciar sesión» con ese correo escrito. Atrás sigue llevando a la Bienvenida.
  */
 @Composable
-fun NavegacionCuenta(modifier: Modifier = Modifier) {
+fun NavegacionCuenta(modifier: Modifier = Modifier, correoSugerido: String? = null) {
     val controlador = rememberNavController()
     val contexto = LocalContext.current
+
+    var accesoAbierto by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (correoSugerido != null && !accesoAbierto) {
+            accesoAbierto = true
+            controlador.navigate(RutasCuenta.Acceso)
+        }
+    }
 
     // Funciones que llegan con la conexión al backend. Mientras tanto se avisa con claridad.
     fun proximamente(que: String) {
@@ -83,6 +98,7 @@ fun NavegacionCuenta(modifier: Modifier = Modifier) {
                         popUpTo(RutasCuenta.Bienvenida)
                     }
                 },
+                correoInicial = correoSugerido.orEmpty(),
                 cargando = estado.cargando,
                 error = estado.error,
                 intentosFallidos = estado.intentosFallidos,

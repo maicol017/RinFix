@@ -54,7 +54,7 @@ object Huella {
                     if (desbloqueado != null) {
                         alExito(desbloqueado)
                     } else {
-                        alError("No pudimos verificar la llave del teléfono. Entra con tu contraseña.")
+                        alError("No pudimos usar la llave del teléfono. Inténtalo de nuevo.")
                     }
                 }
 
@@ -65,7 +65,7 @@ object Huella {
                         BiometricPrompt.ERROR_CANCELED -> alCancelar()
                         BiometricPrompt.ERROR_LOCKOUT,
                         BiometricPrompt.ERROR_LOCKOUT_PERMANENT ->
-                            alError("Demasiados intentos. Espera un momento o entra con tu contraseña.")
+                            alError("Demasiados intentos. Espera un momento e inténtalo de nuevo.")
                         else -> alError(mensaje.toString())
                     }
                 }

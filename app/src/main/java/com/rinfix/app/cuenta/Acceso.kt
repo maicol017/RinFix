@@ -57,6 +57,8 @@ import com.rinfix.app.diseno.recordarEntrada
  * Quien la usa decide si las credenciales son correctas y devuelve el resultado con
  * `cargando` y `error`; cada vez que `intentosFallidos` aumenta, los campos se sacuden
  * y el teléfono vibra.
+ *
+ * `correoInicial` llega escrito cuando la persona viene de «Usar contraseña» en el desbloqueo.
  */
 @Composable
 fun PantallaAcceso(
@@ -66,6 +68,7 @@ fun PantallaAcceso(
     alOlvidarContrasena: () -> Unit,
     alCrearCuenta: () -> Unit,
     modifier: Modifier = Modifier,
+    correoInicial: String = "",
     cargando: Boolean = false,
     error: String? = null,
     intentosFallidos: Int = 0,
@@ -75,7 +78,7 @@ fun PantallaAcceso(
     val foco = LocalFocusManager.current
     val vista = LocalView.current
 
-    var correo by rememberSaveable { mutableStateOf("") }
+    var correo by rememberSaveable { mutableStateOf(correoInicial) }
     var contrasena by rememberSaveable { mutableStateOf("") }
     var errorCorreo by rememberSaveable { mutableStateOf<String?>(null) }
     var errorContrasena by rememberSaveable { mutableStateOf<String?>(null) }
