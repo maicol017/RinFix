@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Android 12 o superior muestra su propia pantalla de inicio al abrir la app.
+         Se deja crema y sin ícono para que la animación de apertura arranque sin saltos. -->
+    <style name="Theme.RinFix" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/crema</item>
+        <item name="android:windowSplashScreenBackground">@color/crema</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+    </style>
+</resources>

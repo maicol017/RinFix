@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -15,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.rinfix.app.apertura.Apertura
 import com.rinfix.app.diseno.TemaRinFix
 import com.rinfix.app.navegacion.NavegacionRinFix
 import com.rinfix.app.navegacion.Rol
@@ -42,13 +44,23 @@ class MainActivity : ComponentActivity() {
                 ) {
                     // Temporal: el rol se elige desde Perfil hasta que exista el inicio de sesión.
                     var rol by rememberSaveable { mutableStateOf(Rol.Cliente) }
-                    key(rol) {
-                        NavegacionRinFix(
-                            rol = rol,
-                            alCambiarRol = {
-                                rol = if (rol == Rol.Cliente) Rol.Taller else Rol.Cliente
-                            },
-                        )
+
+                    // La apertura se ve solo al abrir la app desde cero, no al girar el teléfono
+                    // ni al volver a ella. Mientras corre, la app ya se está preparando debajo.
+                    var aperturaTerminada by rememberSaveable { mutableStateOf(false) }
+
+                    Box {
+                        key(rol) {
+                            NavegacionRinFix(
+                                rol = rol,
+                                alCambiarRol = {
+                                    rol = if (rol == Rol.Cliente) Rol.Taller else Rol.Cliente
+                                },
+                            )
+                        }
+                        if (!aperturaTerminada) {
+                            Apertura(alTerminar = { aperturaTerminada = true })
+                        }
                     }
                 }
             }
