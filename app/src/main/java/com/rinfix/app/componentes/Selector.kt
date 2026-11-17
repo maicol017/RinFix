@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
@@ -130,10 +132,10 @@ fun <T> SelectorSegmentos(
 private val AltoOpcion = 38.dp
 
 /**
- * Fichas redondas de una sola elección que bajan de línea si no caben,
- * por ejemplo los tamaños de rin. La elegida se pone oscura.
+ * Fichas redondas de una sola elección, por ejemplo los tamaños de rin. La elegida se pone oscura.
  *
- * `descripcion` es lo que lee el lector de pantalla: «17 pulgadas» en lugar de «17"».
+ * - Bajan de línea si no caben; con `enUnaLinea` se quedan en una fila que se desliza de lado.
+ * - `descripcion` es lo que lee el lector de pantalla: «17 pulgadas» en lugar de «17"».
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -145,12 +147,9 @@ fun <T> SelectorFichas(
     modifier: Modifier = Modifier,
     descripcion: (T) -> String = texto,
     habilitado: Boolean = true,
+    enUnaLinea: Boolean = false,
 ) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.selectableGroup(),
-    ) {
+    val fichas: @Composable () -> Unit = {
         opciones.forEach { opcion ->
             Ficha(
                 texto = texto(opcion),
@@ -159,6 +158,24 @@ fun <T> SelectorFichas(
                 habilitada = habilitado,
                 alPulsar = { alElegir(opcion) },
             )
+        }
+    }
+    if (enUnaLinea) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier
+                .horizontalScroll(rememberScrollState())
+                .selectableGroup(),
+        ) {
+            fichas()
+        }
+    } else {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier.selectableGroup(),
+        ) {
+            fichas()
         }
     }
 }

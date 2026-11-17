@@ -1,8 +1,15 @@
 package com.rinfix.app.diseno
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.view.Window
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 /**
  * Traduce la paleta de RinFix a los nombres que usan los componentes de Material.
@@ -67,4 +74,31 @@ fun TemaRinFix(content: @Composable () -> Unit) {
         shapes = FormasRinFix,
         content = content,
     )
+}
+
+/**
+ * Mientras la pantalla que lo llama está visible, la hora y los íconos de arriba se ven claros,
+ * para fondos oscuros como la cámara. Al salir vuelven a como estaban.
+ */
+@Composable
+fun IconosDeArribaClaros() {
+    val vista = LocalView.current
+    if (vista.isInEditMode) return
+    DisposableEffect(vista) {
+        val ventana = vista.context.buscarVentana()
+        if (ventana == null) {
+            onDispose { }
+        } else {
+            val control = WindowCompat.getInsetsController(ventana, vista)
+            val antes = control.isAppearanceLightStatusBars
+            control.isAppearanceLightStatusBars = false
+            onDispose { control.isAppearanceLightStatusBars = antes }
+        }
+    }
+}
+
+private tailrec fun Context.buscarVentana(): Window? = when (this) {
+    is Activity -> window
+    is ContextWrapper -> baseContext.buscarVentana()
+    else -> null
 }
