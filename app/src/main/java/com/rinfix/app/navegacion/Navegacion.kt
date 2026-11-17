@@ -29,7 +29,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.rinfix.app.cliente.PantallaAnalizando
 import com.rinfix.app.cliente.PantallaAnalizar
+import com.rinfix.app.cliente.PantallaResultado
 import com.rinfix.app.cliente.PantallaAsistente
 import com.rinfix.app.cliente.PantallaGaraje
 import com.rinfix.app.cliente.PantallaInicio
@@ -136,10 +138,15 @@ fun NavegacionRinFix(
                 )
             }
             composable(Rutas.Analizando) {
-                PorConstruir(
-                    titulo = "Analizando",
-                    descripcion = "Revisión de la foto, detección del rin, interpretación con IA y cotización, paso a paso.",
+                PantallaAnalizando(
                     alVolver = { controlador.popBackStack() },
+                    alVerResultado = { id ->
+                        // Al ver el resultado, atrás ya no vuelve a la cámara ni al análisis.
+                        controlador.navigate(Rutas.resultado(id)) {
+                            popUpTo(Rutas.Analizar) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.safeDrawingPadding(),
                 )
             }
 
@@ -168,10 +175,11 @@ fun NavegacionRinFix(
                 )
             }
             composable(Rutas.Resultado) {
-                PorConstruir(
-                    titulo = "Diagnóstico",
-                    descripcion = "Daños posibles, gravedad, cotización en pesos y solicitud de reparación.",
+                PantallaResultado(
                     alVolver = { controlador.popBackStack() },
+                    alSolicitar = { controlador.navigate(Rutas.Agendar) },
+                    alPreguntar = { controlador.irAPestana(Rutas.Asistente) },
+                    modifier = Modifier.safeDrawingPadding(),
                 )
             }
             composable(Rutas.Seguimiento) {
