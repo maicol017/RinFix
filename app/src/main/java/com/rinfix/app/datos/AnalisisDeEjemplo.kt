@@ -1,6 +1,7 @@
 package com.rinfix.app.datos
 
 import java.time.LocalDateTime
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -14,8 +15,19 @@ class AnalisisDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioAn
     /** Diagnósticos por id de usuario. */
     private val porUsuario = MutableStateFlow(diagnosticosIniciales(ahora))
 
+    /** Análisis enviados y aún sin resultado, por id. */
+    private val enCurso = mutableMapOf<String, SolicitudAnalisis>()
+    private var siguiente = 1
+
     override fun historial(usuario: Usuario): Flow<List<Diagnostico>> =
         porUsuario.map { mapa -> mapa[usuario.id].orEmpty().sortedByDescending { it.fecha } }
+
+    override suspend fun iniciar(usuario: Usuario, solicitud: SolicitudAnalisis): String {
+        delay(400)
+        val id = "analisis-${siguiente++}"
+        enCurso[id] = solicitud
+        return id
+    }
 
     internal companion object {
         fun diagnosticosIniciales(ahora: LocalDateTime): Map<String, List<Diagnostico>> = mapOf(

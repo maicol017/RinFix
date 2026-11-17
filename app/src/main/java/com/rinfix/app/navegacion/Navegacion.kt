@@ -91,7 +91,7 @@ fun NavegacionRinFix(
             // Cliente
             composable(Rutas.Inicio) {
                 PantallaInicio(
-                    alAnalizar = { controlador.navigate(Rutas.Analizar) { launchSingleTop = true } },
+                    alAnalizar = { controlador.navigate(Rutas.analizar()) { launchSingleTop = true } },
                     alVerOrden = { id -> controlador.navigate(Rutas.seguimiento(id)) },
                     alVerOrdenes = { controlador.irAPestana(Rutas.Ordenes) },
                     alAgendar = { controlador.navigate(Rutas.Agendar) },
@@ -107,6 +107,13 @@ fun NavegacionRinFix(
             composable(Rutas.Asistente) { PantallaAsistente(modifier = espacioPestana) }
             composable(
                 route = Rutas.Analizar,
+                arguments = listOf(
+                    navArgument("vehiculo") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
                 enterTransition = {
                     slideIntoContainer(
                         towards = SlideDirection.Up,
@@ -121,8 +128,19 @@ fun NavegacionRinFix(
                         targetOffset = { it / 3 },
                     ) + fadeOut(tween(durationMillis = 200))
                 },
-            ) {
-                PantallaAnalizar(modifier = Modifier.safeDrawingPadding())
+            ) { entrada ->
+                PantallaAnalizar(
+                    alCerrar = { controlador.popBackStack() },
+                    alAnalizar = { id -> controlador.navigate(Rutas.analizando(id)) },
+                    idVehiculo = entrada.arguments?.getString("vehiculo"),
+                )
+            }
+            composable(Rutas.Analizando) {
+                PorConstruir(
+                    titulo = "Analizando",
+                    descripcion = "Revisión de la foto, detección del rin, interpretación con IA y cotización, paso a paso.",
+                    alVolver = { controlador.popBackStack() },
+                )
             }
 
             // Cliente: detalles que se construyen en los próximos pasos
@@ -137,7 +155,7 @@ fun NavegacionRinFix(
             ) { entrada ->
                 PantallaGaraje(
                     alVolver = { controlador.popBackStack() },
-                    alAnalizar = { controlador.navigate(Rutas.Analizar) { launchSingleTop = true } },
+                    alAnalizar = { id -> controlador.navigate(Rutas.analizar(id)) { launchSingleTop = true } },
                     abrirFormulario = entrada.arguments?.getBoolean("agregar") ?: false,
                     modifier = Modifier.safeDrawingPadding(),
                 )
@@ -202,7 +220,7 @@ fun NavegacionRinFix(
                     BotonCentral(
                         icono = Iconos.Rin,
                         descripcion = "Analizar un rin",
-                        alPulsar = { controlador.navigate(Rutas.Analizar) { launchSingleTop = true } },
+                        alPulsar = { controlador.navigate(Rutas.analizar()) { launchSingleTop = true } },
                     )
                 } else {
                     null

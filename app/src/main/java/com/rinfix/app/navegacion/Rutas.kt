@@ -8,17 +8,20 @@ object Rutas {
 
     // Cliente
     const val Inicio = "inicio"
-    const val Analizar = "analizar"
+    const val Analizar = "analizar?vehiculo={vehiculo}"
     const val Asistente = "asistente"
     const val Ordenes = "ordenes"
 
     // Cliente: pantallas de detalle (sin barra inferior)
     const val Garaje = "garaje?agregar={agregar}"
+    const val Analizando = "analizando/{analisis}"
     const val Agendar = "agendar"
     const val Resultado = "resultado/{diagnostico}"
     const val Seguimiento = "seguimiento/{orden}"
     const val Pago = "pago/{orden}"
 
+    fun analizar(idVehiculo: String? = null) = if (idVehiculo == null) "analizar" else "analizar?vehiculo=$idVehiculo"
+    fun analizando(idAnalisis: String) = "analizando/$idAnalisis"
     fun garaje(agregar: Boolean = false) = if (agregar) "garaje?agregar=true" else "garaje"
     fun resultado(idDiagnostico: String) = "resultado/$idDiagnostico"
     fun seguimiento(idOrden: String) = "seguimiento/$idOrden"

@@ -7,6 +7,9 @@ enum class MaterialRin(val nombre: String) {
     Desconocido("No sé"),
 }
 
+/** Tamaños de rin comunes en Colombia, en pulgadas. */
+val TamanosRin: List<Int> = (13..20).toList()
+
 /** Vehículo guardado en «Mi garaje». */
 data class Vehiculo(
     val id: String,

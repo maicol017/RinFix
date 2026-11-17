@@ -60,6 +60,7 @@ import com.rinfix.app.componentes.TipoEtiqueta
 import com.rinfix.app.componentes.lineaPunteadaArriba
 import com.rinfix.app.datos.GarajeDeEjemplo
 import com.rinfix.app.datos.MaterialRin
+import com.rinfix.app.datos.TamanosRin
 import com.rinfix.app.datos.Vehiculo
 import com.rinfix.app.diseno.Colores
 import com.rinfix.app.diseno.TemaRinFix
@@ -75,7 +76,7 @@ import java.time.LocalDate
 @Composable
 fun PantallaGaraje(
     alVolver: () -> Unit,
-    alAnalizar: () -> Unit,
+    alAnalizar: (idVehiculo: String) -> Unit,
     modifier: Modifier = Modifier,
     abrirFormulario: Boolean = false,
     logica: GarajeLogica = viewModel(),
@@ -97,7 +98,7 @@ fun PantallaGaraje(
 private fun ContenidoGaraje(
     estado: GarajeLogica.Estado,
     alVolver: () -> Unit,
-    alAnalizar: () -> Unit,
+    alAnalizar: (String) -> Unit,
     abrirFormulario: Boolean,
     alGuardar: (Vehiculo, () -> Unit) -> Unit,
     alQuitar: (String) -> Unit,
@@ -158,7 +159,7 @@ private fun ContenidoGaraje(
                     key(vehiculo.id) {
                         TarjetaVehiculo(
                             vehiculo = vehiculo,
-                            alAnalizar = alAnalizar,
+                            alAnalizar = { alAnalizar(vehiculo.id) },
                             alEditar = {
                                 alLimpiarError()
                                 formulario = vehiculo.id
@@ -279,8 +280,8 @@ private fun TarjetaVehiculo(
     }
 }
 
-/** Tamaños de rin comunes en Colombia; `null` es «No sé». */
-private val TamanosRin: List<Int?> = listOf(13, 14, 15, 16, 17, 18, 19, 20, null)
+/** Tamaños de rin del formulario; `null` es «No sé». */
+private val OpcionesTamano: List<Int?> = TamanosRin + listOf(null)
 
 @Composable
 private fun FormularioVehiculo(
@@ -394,7 +395,7 @@ private fun FormularioVehiculo(
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(text = "Tamaño del rin", style = MaterialTheme.typography.titleSmall, color = Colores.Tinta)
             SelectorFichas(
-                opciones = TamanosRin,
+                opciones = OpcionesTamano,
                 seleccionada = pulgadas,
                 alElegir = { pulgadas = it },
                 texto = { tamano -> tamano?.let { "$it\"" } ?: "No sé" },
