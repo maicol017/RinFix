@@ -6,20 +6,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
 import com.rinfix.app.apertura.Apertura
+import com.rinfix.app.datos.Servicios
 import com.rinfix.app.diseno.TemaRinFix
+import com.rinfix.app.navegacion.NavegacionCuenta
 import com.rinfix.app.navegacion.NavegacionRinFix
-import com.rinfix.app.navegacion.Rol
+import kotlinx.coroutines.launch
 
 /**
  * Punto de entrada de la app. Android exige este archivo con este nombre.
@@ -42,21 +47,30 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    // Temporal: el rol se elige desde Perfil hasta que exista el inicio de sesión.
-                    var rol by rememberSaveable { mutableStateOf(Rol.Cliente) }
+                    val usuario by Servicios.cuentas.usuarioActual.collectAsState()
+                    val alcance = rememberCoroutineScope()
 
                     // La apertura se ve solo al abrir la app desde cero, no al girar el teléfono
                     // ni al volver a ella. Mientras corre, la app ya se está preparando debajo.
                     var aperturaTerminada by rememberSaveable { mutableStateOf(false) }
 
                     Box {
-                        key(rol) {
-                            NavegacionRinFix(
-                                rol = rol,
-                                alCambiarRol = {
-                                    rol = if (rol == Rol.Cliente) Rol.Taller else Rol.Cliente
-                                },
-                            )
+                        // Sin sesión: bienvenida y acceso. Con sesión: la app del rol del usuario.
+                        Crossfade(
+                            targetState = usuario,
+                            animationSpec = tween(durationMillis = 350),
+                            label = "sesión",
+                        ) { actual ->
+                            if (actual == null) {
+                                NavegacionCuenta()
+                            } else {
+                                NavegacionRinFix(
+                                    rol = actual.rol,
+                                    alCerrarSesion = {
+                                        alcance.launch { Servicios.cuentas.salir() }
+                                    },
+                                )
+                            }
                         }
                         if (!aperturaTerminada) {
                             Apertura(alTerminar = { aperturaTerminada = true })

@@ -21,9 +21,6 @@ object Rutas {
     const val Perfil = "perfil"
 }
 
-/** Los dos tipos de usuario de RinFix. Cada uno tiene su propia barra inferior. */
-enum class Rol { Cliente, Taller }
-
 /** Pestañas del cliente. El botón central del rin (Analizar) va aparte, en la mitad. */
 val PestanasCliente = listOf(
     Pestana(Rutas.Inicio, "Inicio", Iconos.Inicio),

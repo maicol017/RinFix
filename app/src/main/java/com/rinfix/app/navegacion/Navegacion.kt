@@ -35,6 +35,7 @@ import com.rinfix.app.componentes.BotonCentral
 import com.rinfix.app.componentes.EspacioBarraInferior
 import com.rinfix.app.componentes.Iconos
 import com.rinfix.app.cuenta.PantallaPerfil
+import com.rinfix.app.datos.Rol
 import com.rinfix.app.diseno.Colores
 import com.rinfix.app.taller.PantallaAgenda
 import com.rinfix.app.taller.PantallaPanel
@@ -50,14 +51,13 @@ private val CurvaSuave = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
  * - Hacia una pantalla de detalle: entra desde la derecha; al volver, sale hacia la derecha.
  * - Analizar sube desde abajo, como una cámara que se abre, y oculta la barra inferior.
  *
- * `alCambiarRol` es temporal: permite ver el lado del taller desde Perfil mientras
- * no existe el inicio de sesión (fase 1).
+ * `alCerrarSesion` lo usa Perfil para salir de la cuenta.
  */
 @Composable
 fun NavegacionRinFix(
     rol: Rol,
     modifier: Modifier = Modifier,
-    alCambiarRol: (() -> Unit)? = null,
+    alCerrarSesion: (() -> Unit)? = null,
 ) {
     val controlador = rememberNavController()
     val entradaActual by controlador.currentBackStackEntryAsState()
@@ -115,8 +115,7 @@ fun NavegacionRinFix(
             composable(Rutas.Perfil) {
                 PantallaPerfil(
                     modifier = espacioPestana,
-                    textoCambioRol = if (esCliente) "Ver como taller (prueba)" else "Ver como cliente (prueba)",
-                    alCambiarRol = alCambiarRol,
+                    alCerrarSesion = alCerrarSesion,
                 )
             }
         }

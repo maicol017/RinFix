@@ -8,19 +8,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rinfix.app.componentes.Boton
 import com.rinfix.app.componentes.EstiloBoton
+import com.rinfix.app.componentes.Iconos
 import com.rinfix.app.componentes.PantallaProvisional
 
 /**
  * Perfil del usuario, compartido por cliente y taller.
- *
- * `alCambiarRol` es solo para pruebas: deja ver el lado del taller mientras
- * no existe el inicio de sesión. Se quita en la fase 1.
+ * Por ahora es provisional; ya permite cerrar la sesión.
  */
 @Composable
 fun PantallaPerfil(
     modifier: Modifier = Modifier,
-    textoCambioRol: String? = null,
-    alCambiarRol: (() -> Unit)? = null,
+    alCerrarSesion: (() -> Unit)? = null,
 ) {
     Column(modifier = modifier) {
         PantallaProvisional(
@@ -28,11 +26,12 @@ fun PantallaPerfil(
             descripcion = "Tus datos, vehículos, desbloqueo con huella y cierre de sesión.",
             modifier = Modifier.weight(1f),
         )
-        if (textoCambioRol != null && alCambiarRol != null) {
+        if (alCerrarSesion != null) {
             Boton(
-                texto = textoCambioRol,
-                alPulsar = alCambiarRol,
+                texto = "Cerrar sesión",
+                alPulsar = alCerrarSesion,
                 estilo = EstiloBoton.Blanco,
+                icono = Iconos.Salir,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 12.dp),
