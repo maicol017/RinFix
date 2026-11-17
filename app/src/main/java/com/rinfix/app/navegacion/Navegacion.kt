@@ -12,6 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -31,9 +32,11 @@ import com.rinfix.app.cliente.PantallaAsistente
 import com.rinfix.app.cliente.PantallaInicio
 import com.rinfix.app.cliente.PantallaOrdenes
 import com.rinfix.app.componentes.BarraInferior
+import com.rinfix.app.componentes.BarraSuperior
 import com.rinfix.app.componentes.BotonCentral
 import com.rinfix.app.componentes.EspacioBarraInferior
 import com.rinfix.app.componentes.Iconos
+import com.rinfix.app.componentes.PantallaProvisional
 import com.rinfix.app.cuenta.PantallaPerfil
 import com.rinfix.app.datos.Rol
 import com.rinfix.app.diseno.Colores
@@ -83,7 +86,19 @@ fun NavegacionRinFix(
             popExitTransition = { salidaAlVolver() },
         ) {
             // Cliente
-            composable(Rutas.Inicio) { PantallaInicio(modifier = espacioPestana) }
+            composable(Rutas.Inicio) {
+                PantallaInicio(
+                    alAnalizar = { controlador.navigate(Rutas.Analizar) { launchSingleTop = true } },
+                    alVerOrden = { id -> controlador.navigate(Rutas.seguimiento(id)) },
+                    alVerOrdenes = { controlador.irAPestana(Rutas.Ordenes) },
+                    alAgendar = { controlador.navigate(Rutas.Agendar) },
+                    alPagar = { id -> controlador.navigate(Rutas.pago(id)) },
+                    alAbrirAsistente = { controlador.irAPestana(Rutas.Asistente) },
+                    alVerGaraje = { controlador.navigate(Rutas.Garaje) },
+                    alVerDiagnostico = { id -> controlador.navigate(Rutas.resultado(id)) },
+                    modifier = espacioPestana,
+                )
+            }
             composable(Rutas.Ordenes) { PantallaOrdenes(modifier = espacioPestana) }
             composable(Rutas.Asistente) { PantallaAsistente(modifier = espacioPestana) }
             composable(
@@ -104,6 +119,43 @@ fun NavegacionRinFix(
                 },
             ) {
                 PantallaAnalizar(modifier = Modifier.safeDrawingPadding())
+            }
+
+            // Cliente: detalles que se construyen en los próximos pasos
+            composable(Rutas.Garaje) {
+                PorConstruir(
+                    titulo = "Mi garaje",
+                    descripcion = "Tus vehículos y sus rines: agregar, editar y quitar.",
+                    alVolver = { controlador.popBackStack() },
+                )
+            }
+            composable(Rutas.Agendar) {
+                PorConstruir(
+                    titulo = "Agendar una revisión",
+                    descripcion = "Elegir fecha y hora para que el taller revise un rin.",
+                    alVolver = { controlador.popBackStack() },
+                )
+            }
+            composable(Rutas.Resultado) {
+                PorConstruir(
+                    titulo = "Diagnóstico",
+                    descripcion = "Daños posibles, gravedad, cotización en pesos y solicitud de reparación.",
+                    alVolver = { controlador.popBackStack() },
+                )
+            }
+            composable(Rutas.Seguimiento) {
+                PorConstruir(
+                    titulo = "Seguimiento",
+                    descripcion = "Línea de tiempo de la reparación con las fotos de cada etapa.",
+                    alVolver = { controlador.popBackStack() },
+                )
+            }
+            composable(Rutas.Pago) {
+                PorConstruir(
+                    titulo = "Pagar servicio",
+                    descripcion = "Pago simulado con resumen de costos y comprobante.",
+                    alVolver = { controlador.popBackStack() },
+                )
             }
 
             // Taller
@@ -144,6 +196,15 @@ fun NavegacionRinFix(
                 },
             )
         }
+    }
+}
+
+/** Pantalla de detalle que todavía no existe: título, qué tendrá y botón para volver. */
+@Composable
+private fun PorConstruir(titulo: String, descripcion: String, alVolver: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        BarraSuperior(titulo = titulo, alVolver = alVolver)
+        PantallaProvisional(titulo = titulo, descripcion = descripcion)
     }
 }
 

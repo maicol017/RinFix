@@ -12,6 +12,17 @@ object Rutas {
     const val Asistente = "asistente"
     const val Ordenes = "ordenes"
 
+    // Cliente: pantallas de detalle (sin barra inferior)
+    const val Garaje = "garaje"
+    const val Agendar = "agendar"
+    const val Resultado = "resultado/{diagnostico}"
+    const val Seguimiento = "seguimiento/{orden}"
+    const val Pago = "pago/{orden}"
+
+    fun resultado(idDiagnostico: String) = "resultado/$idDiagnostico"
+    fun seguimiento(idOrden: String) = "seguimiento/$idOrden"
+    fun pago(idOrden: String) = "pago/$idOrden"
+
     // Taller
     const val Panel = "panel"
     const val Agenda = "agenda"
