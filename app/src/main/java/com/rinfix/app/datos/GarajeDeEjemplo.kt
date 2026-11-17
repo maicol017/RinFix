@@ -23,6 +23,13 @@ class GarajeDeEjemplo : ServicioGaraje {
         return guardado
     }
 
+    override suspend fun actualizar(usuario: Usuario, vehiculo: Vehiculo) {
+        delay(400)
+        porUsuario.update { mapa ->
+            mapa + (usuario.id to mapa[usuario.id].orEmpty().map { if (it.id == vehiculo.id) vehiculo else it })
+        }
+    }
+
     override suspend fun quitar(usuario: Usuario, idVehiculo: String) {
         delay(300)
         porUsuario.update { mapa ->

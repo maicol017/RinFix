@@ -23,12 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.rinfix.app.cliente.PantallaAnalizar
 import com.rinfix.app.cliente.PantallaAsistente
+import com.rinfix.app.cliente.PantallaGaraje
 import com.rinfix.app.cliente.PantallaInicio
 import com.rinfix.app.cliente.PantallaOrdenes
 import com.rinfix.app.componentes.BarraInferior
@@ -94,7 +97,8 @@ fun NavegacionRinFix(
                     alAgendar = { controlador.navigate(Rutas.Agendar) },
                     alPagar = { id -> controlador.navigate(Rutas.pago(id)) },
                     alAbrirAsistente = { controlador.irAPestana(Rutas.Asistente) },
-                    alVerGaraje = { controlador.navigate(Rutas.Garaje) },
+                    alVerGaraje = { controlador.navigate(Rutas.garaje()) },
+                    alAgregarVehiculo = { controlador.navigate(Rutas.garaje(agregar = true)) },
                     alVerDiagnostico = { id -> controlador.navigate(Rutas.resultado(id)) },
                     modifier = espacioPestana,
                 )
@@ -122,11 +126,20 @@ fun NavegacionRinFix(
             }
 
             // Cliente: detalles que se construyen en los próximos pasos
-            composable(Rutas.Garaje) {
-                PorConstruir(
-                    titulo = "Mi garaje",
-                    descripcion = "Tus vehículos y sus rines: agregar, editar y quitar.",
+            composable(
+                route = Rutas.Garaje,
+                arguments = listOf(
+                    navArgument("agregar") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    },
+                ),
+            ) { entrada ->
+                PantallaGaraje(
                     alVolver = { controlador.popBackStack() },
+                    alAnalizar = { controlador.navigate(Rutas.Analizar) { launchSingleTop = true } },
+                    abrirFormulario = entrada.arguments?.getBoolean("agregar") ?: false,
+                    modifier = Modifier.safeDrawingPadding(),
                 )
             }
             composable(Rutas.Agendar) {

@@ -127,6 +127,7 @@ fun PantallaInicio(
     alPagar: (idOrden: String) -> Unit,
     alAbrirAsistente: () -> Unit,
     alVerGaraje: () -> Unit,
+    alAgregarVehiculo: () -> Unit,
     alVerDiagnostico: (idDiagnostico: String) -> Unit,
     modifier: Modifier = Modifier,
     logica: InicioLogica = viewModel(),
@@ -141,6 +142,7 @@ fun PantallaInicio(
         alPagar = alPagar,
         alAbrirAsistente = alAbrirAsistente,
         alVerGaraje = alVerGaraje,
+        alAgregarVehiculo = alAgregarVehiculo,
         alVerDiagnostico = alVerDiagnostico,
         alMarcarLeidas = logica::marcarLeidas,
         modifier = modifier,
@@ -157,6 +159,7 @@ private fun ContenidoInicio(
     alPagar: (String) -> Unit,
     alAbrirAsistente: () -> Unit,
     alVerGaraje: () -> Unit,
+    alAgregarVehiculo: () -> Unit,
     alVerDiagnostico: (String) -> Unit,
     alMarcarLeidas: () -> Unit,
     modifier: Modifier = Modifier,
@@ -222,6 +225,7 @@ private fun ContenidoInicio(
                 FilaGaraje(
                     vehiculos = estado.vehiculos,
                     alVerGaraje = alVerGaraje,
+                    alAgregarVehiculo = alAgregarVehiculo,
                     modifier = Modifier.padding(top = 6.dp),
                 )
             }
@@ -554,6 +558,7 @@ private fun SinReparacion(alAnalizar: () -> Unit, modifier: Modifier = Modifier)
 private fun FilaGaraje(
     vehiculos: List<Vehiculo>,
     alVerGaraje: () -> Unit,
+    alAgregarVehiculo: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // La fila llega hasta los bordes de la pantalla y se desliza de lado.
@@ -568,7 +573,7 @@ private fun FilaGaraje(
         vehiculos.forEach { vehiculo ->
             TarjetaVehiculo(vehiculo = vehiculo, alPulsar = alVerGaraje, modifier = Modifier.fillMaxHeight())
         }
-        AgregarVehiculo(alPulsar = alVerGaraje, modifier = Modifier.fillMaxHeight())
+        AgregarVehiculo(alPulsar = alAgregarVehiculo, modifier = Modifier.fillMaxHeight())
     }
 }
 
@@ -872,6 +877,7 @@ private fun VistaPreviaInicio() {
             alPagar = {},
             alAbrirAsistente = {},
             alVerGaraje = {},
+            alAgregarVehiculo = {},
             alVerDiagnostico = {},
             alMarcarLeidas = {},
         )
@@ -891,6 +897,7 @@ private fun VistaPreviaInicioCuentaNueva() {
             alPagar = {},
             alAbrirAsistente = {},
             alVerGaraje = {},
+            alAgregarVehiculo = {},
             alVerDiagnostico = {},
             alMarcarLeidas = {},
         )

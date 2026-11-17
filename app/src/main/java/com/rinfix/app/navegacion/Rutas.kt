@@ -13,12 +13,13 @@ object Rutas {
     const val Ordenes = "ordenes"
 
     // Cliente: pantallas de detalle (sin barra inferior)
-    const val Garaje = "garaje"
+    const val Garaje = "garaje?agregar={agregar}"
     const val Agendar = "agendar"
     const val Resultado = "resultado/{diagnostico}"
     const val Seguimiento = "seguimiento/{orden}"
     const val Pago = "pago/{orden}"
 
+    fun garaje(agregar: Boolean = false) = if (agregar) "garaje?agregar=true" else "garaje"
     fun resultado(idDiagnostico: String) = "resultado/$idDiagnostico"
     fun seguimiento(idOrden: String) = "seguimiento/$idOrden"
     fun pago(idOrden: String) = "pago/$idOrden"

@@ -10,5 +10,8 @@ interface ServicioGaraje {
     /** Guarda el vehículo y lo devuelve con su id definitivo. */
     suspend fun agregar(usuario: Usuario, vehiculo: Vehiculo): Vehiculo
 
+    /** Reemplaza los datos del vehículo con el mismo id. */
+    suspend fun actualizar(usuario: Usuario, vehiculo: Vehiculo)
+
     suspend fun quitar(usuario: Usuario, idVehiculo: String)
 }
