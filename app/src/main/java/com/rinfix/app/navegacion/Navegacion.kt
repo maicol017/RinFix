@@ -33,6 +33,7 @@ import com.rinfix.app.cliente.PantallaAgendar
 import com.rinfix.app.cliente.PantallaAnalizando
 import com.rinfix.app.cliente.PantallaAnalizar
 import com.rinfix.app.cliente.PantallaResultado
+import com.rinfix.app.cliente.PantallaSeguimiento
 import com.rinfix.app.cliente.PantallaAsistente
 import com.rinfix.app.cliente.PantallaGaraje
 import com.rinfix.app.cliente.PantallaInicio
@@ -106,7 +107,14 @@ fun NavegacionRinFix(
                     modifier = espacioPestana,
                 )
             }
-            composable(Rutas.Ordenes) { PantallaOrdenes(modifier = espacioPestana) }
+            composable(Rutas.Ordenes) {
+                PantallaOrdenes(
+                    alVerOrden = { id -> controlador.navigate(Rutas.seguimiento(id)) },
+                    alAnalizar = { controlador.navigate(Rutas.analizar()) { launchSingleTop = true } },
+                    alAgendar = { controlador.navigate(Rutas.agendar()) },
+                    modifier = espacioPestana,
+                )
+            }
             composable(Rutas.Asistente) { PantallaAsistente(modifier = espacioPestana) }
             composable(
                 route = Rutas.Analizar,
@@ -197,10 +205,11 @@ fun NavegacionRinFix(
                 )
             }
             composable(Rutas.Seguimiento) {
-                PorConstruir(
-                    titulo = "Seguimiento",
-                    descripcion = "Línea de tiempo de la reparación con las fotos de cada etapa.",
+                PantallaSeguimiento(
                     alVolver = { controlador.popBackStack() },
+                    alPagar = { id -> controlador.navigate(Rutas.pago(id)) },
+                    alVerDiagnostico = { id -> controlador.navigate(Rutas.resultado(id)) },
+                    modifier = Modifier.safeDrawingPadding(),
                 )
             }
             composable(Rutas.Pago) {
