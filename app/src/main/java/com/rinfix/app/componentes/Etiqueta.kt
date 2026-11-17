@@ -54,6 +54,9 @@ enum class TipoEtiqueta(internal val fondo: Color, internal val texto: Color) {
 
     /** Sobre fotos o fondos de color. */
     Blanca(Colores.Papel, Colores.Tinta),
+
+    /** Sobre fondos oscuros, como la portada de Inicio: blanco translúcido. */
+    Vidrio(Color.White.copy(alpha = 0.14f), Colores.Crema),
 }
 
 /**
