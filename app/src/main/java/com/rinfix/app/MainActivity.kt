@@ -7,12 +7,17 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.rinfix.app.cliente.PantallaInicio
 import com.rinfix.app.diseno.TemaRinFix
+import com.rinfix.app.navegacion.NavegacionRinFix
+import com.rinfix.app.navegacion.Rol
 
 /**
  * Punto de entrada de la app. Android exige este archivo con este nombre.
@@ -35,9 +40,16 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    // Por ahora se muestra Inicio para revisar el tema.
-                    // En el paso de navegación se reemplaza por la navegación completa.
-                    PantallaInicio(modifier = Modifier.safeDrawingPadding())
+                    // Temporal: el rol se elige desde Perfil hasta que exista el inicio de sesión.
+                    var rol by rememberSaveable { mutableStateOf(Rol.Cliente) }
+                    key(rol) {
+                        NavegacionRinFix(
+                            rol = rol,
+                            alCambiarRol = {
+                                rol = if (rol == Rol.Cliente) Rol.Taller else Rol.Cliente
+                            },
+                        )
+                    }
                 }
             }
         }
