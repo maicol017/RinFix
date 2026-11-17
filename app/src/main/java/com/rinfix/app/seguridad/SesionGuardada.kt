@@ -5,38 +5,39 @@ import android.util.Base64
 import androidx.core.content.edit
 
 /**
- * Sesión guardada en el teléfono para el desbloqueo con huella.
+ * Candado del desbloqueo con huella.
  *
- * Lo que se guarda va cifrado con [LlaveHuella]; sin la huella no se puede leer.
- * El nombre de pila se guarda aparte, sin cifrar, solo para saludar («Hola de nuevo, Laura»).
+ * Al activarlo se guarda el id del usuario cifrado con [LlaveHuella]. Al volver a abrir la app,
+ * la huella descifra ese id y se compara con la sesión abierta: si coincide, se desbloquea.
+ * Así el candado queda atado a esa cuenta, y una huella registrada después en el teléfono
+ * no sirve, porque Android anula la llave.
+ *
  * Aquí nunca se guarda nada biométrico: eso lo maneja Android.
  */
 class SesionGuardada(contexto: Context) {
 
-    data class Datos(val nombre: String, val cifrado: ByteArray, val vectorInicial: ByteArray)
+    class Candado(val cifrado: ByteArray, val vectorInicial: ByteArray)
 
     private val preferencias = contexto.getSharedPreferences("rinfix_seguridad", Context.MODE_PRIVATE)
 
-    fun guardar(nombre: String, cifrado: ByteArray, vectorInicial: ByteArray) {
+    fun guardar(cifrado: ByteArray, vectorInicial: ByteArray) {
         preferencias.edit {
-            putString(NOMBRE, nombre)
             putString(CIFRADO, Base64.encodeToString(cifrado, Base64.NO_WRAP))
             putString(VECTOR, Base64.encodeToString(vectorInicial, Base64.NO_WRAP))
         }
     }
 
-    fun leer(): Datos? {
-        val nombre = preferencias.getString(NOMBRE, null) ?: return null
+    fun leer(): Candado? {
         val cifrado = preferencias.getString(CIFRADO, null) ?: return null
         val vector = preferencias.getString(VECTOR, null) ?: return null
-        return Datos(nombre, Base64.decode(cifrado, Base64.NO_WRAP), Base64.decode(vector, Base64.NO_WRAP))
+        return Candado(Base64.decode(cifrado, Base64.NO_WRAP), Base64.decode(vector, Base64.NO_WRAP))
     }
 
+    /** `true` si la persona activó el desbloqueo con huella. */
     fun existe(): Boolean = preferencias.contains(CIFRADO)
 
     fun borrar() {
         preferencias.edit {
-            remove(NOMBRE)
             remove(CIFRADO)
             remove(VECTOR)
         }
@@ -50,9 +51,8 @@ class SesionGuardada(contexto: Context) {
     }
 
     private companion object {
-        const val NOMBRE = "nombre"
-        const val CIFRADO = "sesion_cifrada"
-        const val VECTOR = "vector_inicial"
+        const val CIFRADO = "candado_cifrado"
+        const val VECTOR = "candado_vector"
         const val OFRECIDA = "huella_ofrecida_"
     }
 }

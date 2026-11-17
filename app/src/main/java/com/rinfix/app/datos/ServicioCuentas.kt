@@ -8,7 +8,12 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface ServicioCuentas {
 
-    /** Usuario con sesión iniciada, o `null` si nadie ha entrado. */
+    /**
+     * Usuario con sesión iniciada, o `null` si nadie ha entrado.
+     *
+     * La sesión se conserva al cerrar la app: al volver a abrirla, la persona sigue dentro.
+     * Si activó la huella, la app pide desbloquear antes de mostrar nada.
+     */
     val usuarioActual: StateFlow<Usuario?>
 
     suspend fun entrar(correo: String, contrasena: String): ResultadoCuenta

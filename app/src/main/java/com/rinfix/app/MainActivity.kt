@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Servicios.iniciar(this)
 
         // La app dibuja detrás de las barras del sistema. Los íconos de la barra de estado
         // van siempre oscuros porque el fondo de RinFix es claro.
