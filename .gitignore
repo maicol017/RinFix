@@ -22,3 +22,6 @@ ml/runs/
 ml/**/*.pt
 ml/**/*.tflite
 kaggle.json
+
+# Caché del compilador de Kotlin
+.kotlin/
