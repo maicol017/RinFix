@@ -68,6 +68,8 @@ import com.rinfix.app.diseno.TemaRinFix
  * - Etiqueta arriba y caja blanca de 56 dp con ícono a la izquierda.
  * - Al enfocarlo, el borde se oscurece y aparece un halo lavanda alrededor.
  * - Con `error`, el borde y el halo se vuelven rojos y el mensaje aparece debajo.
+ * - Con `valido`, el borde se pone verde y aparece un check (por ejemplo, correo bien escrito).
+ * - `marcador` es el texto gris de ejemplo que se ve mientras el campo está vacío.
  * - Cada vez que `sacudir` cambia, el campo se sacude un instante (intento fallido).
  * - `esContrasena` oculta el texto y agrega el ojo para mostrarlo.
  * - `tipoContenido` ayuda a los gestores de contraseñas a llenar el campo.
@@ -81,6 +83,8 @@ fun Campo(
     icono: ImageVector? = null,
     error: String? = null,
     ayuda: String? = null,
+    marcador: String? = null,
+    valido: Boolean = false,
     sacudir: Int = 0,
     esContrasena: Boolean = false,
     tipoTeclado: KeyboardType = KeyboardType.Text,
@@ -97,6 +101,7 @@ fun Campo(
     val colorBorde by animateColorAsState(
         targetValue = when {
             conError -> Colores.Freno
+            valido -> Colores.MentaTexto
             enfocado -> Colores.Tinta
             else -> Colores.Linea2
         },
@@ -202,7 +207,25 @@ fun Campo(
                             modifier = Modifier.size(20.dp),
                         )
                     }
-                    Box(modifier = Modifier.weight(1f)) { campo() }
+                    Box(modifier = Modifier.weight(1f)) {
+                        if (valor.isEmpty() && marcador != null) {
+                            Text(
+                                text = marcador,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Colores.Tinta3,
+                                maxLines = 1,
+                            )
+                        }
+                        campo()
+                    }
+                    if (valido && !conError && !esContrasena) {
+                        Icon(
+                            imageVector = Iconos.Hecho,
+                            contentDescription = "Válido",
+                            tint = Colores.MentaTexto,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                     if (esContrasena) {
                         Box(
                             contentAlignment = Alignment.Center,
