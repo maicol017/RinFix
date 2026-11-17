@@ -20,10 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -111,15 +108,7 @@ fun TarjetaOrden(
             modifier = Modifier
                 .padding(top = 14.dp)
                 .fillMaxWidth()
-                .drawBehind {
-                    drawLine(
-                        color = Colores.Linea2,
-                        start = Offset.Zero,
-                        end = Offset(size.width, 0f),
-                        strokeWidth = 1.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx())),
-                    )
-                }
+                .lineaPunteadaArriba()
                 .padding(top = 12.dp),
         ) {
             Icon(

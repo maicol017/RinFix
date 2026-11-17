@@ -9,10 +9,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.rinfix.app.diseno.Colores
+
+/**
+ * Línea punteada en el borde de arriba, para separar el pie de una tarjeta
+ * (entrega, acciones) del contenido principal.
+ */
+fun Modifier.lineaPunteadaArriba(color: Color = Colores.Linea2): Modifier = drawBehind {
+    drawLine(
+        color = color,
+        start = Offset.Zero,
+        end = Offset(size.width, 0f),
+        strokeWidth = 1.dp.toPx(),
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx())),
+    )
+}
 
 /**
  * Título de una sección con una acción opcional a la derecha, por ejemplo
