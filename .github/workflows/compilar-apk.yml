@@ -1,0 +1,77 @@
+# Compila el APK de RinFix en GitHub cada vez que se sube código.
+#
+# - Push a main o ejecución manual: el APK queda en la pestaña Actions, dentro de la ejecución
+#   (sección «Artifacts»). Se descarga como .zip y hay que iniciar sesión en GitHub.
+# - Etiqueta que empieza por v (por ejemplo v0.1.0): además se publica en Releases,
+#   donde se descarga directo desde el teléfono.
+#
+# Por ahora es un APK de depuración: GitHub lo firma con una clave temporal distinta en cada
+# compilación, así que para instalar uno nuevo encima hay que desinstalar el anterior.
+# En la fase 1 se agrega una clave fija guardada en los secretos del repositorio.
+
+name: Compilar APK
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    name: APK de prueba
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v6
+
+      - name: Instalar Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
+      - name: Dar permiso de ejecución a Gradle
+        run: chmod +x gradlew
+
+      - name: Compilar el APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Ponerle nombre al APK
+        id: nombre
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION="$GITHUB_REF_NAME"
+          else
+            VERSION="$(date +%Y%m%d)-${GITHUB_SHA::7}"
+          fi
+          ARCHIVO="RinFix-${VERSION}.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$ARCHIVO"
+          echo "archivo=$ARCHIVO" >> "$GITHUB_OUTPUT"
+
+      - name: Guardar el APK en la ejecución
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.nombre.outputs.archivo }}
+          path: ${{ steps.nombre.outputs.archivo }}
+          retention-days: 30
+
+      - name: Publicar en Releases
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.nombre.outputs.archivo }}
+          prerelease: true
+          generate_release_notes: true
