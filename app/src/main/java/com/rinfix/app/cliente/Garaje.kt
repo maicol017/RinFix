@@ -229,12 +229,12 @@ private fun TarjetaVehiculo(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(52.dp)
-                    .background(Colores.Arena, RoundedCornerShape(16.dp)),
+                    .background(Colores.Mantequilla, RoundedCornerShape(16.dp)),
             ) {
                 Icon(
                     imageVector = Iconos.Carro,
                     contentDescription = null,
-                    tint = Colores.Tinta,
+                    tint = Colores.MantequillaTexto,
                     modifier = Modifier.size(26.dp),
                 )
             }
@@ -328,12 +328,30 @@ private fun FormularioVehiculo(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.verticalScroll(rememberScrollState()),
     ) {
-        Text(
-            text = if (inicial == null) "Agregar vehículo" else "Editar vehículo",
-            style = MaterialTheme.typography.headlineSmall,
-            color = Colores.Tinta,
-            modifier = Modifier.semantics { heading() },
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Colores.Mantequilla, RoundedCornerShape(14.dp)),
+            ) {
+                Icon(
+                    imageVector = Iconos.Carro,
+                    contentDescription = null,
+                    tint = Colores.MantequillaTexto,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Text(
+                text = if (inicial == null) "Agregar vehículo" else "Editar vehículo",
+                style = MaterialTheme.typography.headlineSmall,
+                color = Colores.Tinta,
+                modifier = Modifier.semantics { heading() },
+            )
+        }
 
         AnimatedVisibility(visible = error != null) {
             Aviso(titulo = "No se pudo guardar.", mensaje = error.orEmpty(), tipo = TipoAviso.Error)

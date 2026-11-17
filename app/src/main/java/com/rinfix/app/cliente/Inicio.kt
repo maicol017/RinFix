@@ -486,19 +486,20 @@ private fun AccesoRapido(
         label = "escala de $texto",
     )
     val vista = LocalView.current
+    // Sobre tinta el círculo del ícono es crema translúcida; sobre pastel, blanco translúcido.
+    val fondoIcono = if (fondo == Colores.Tinta) Colores.Crema.copy(alpha = 0.14f) else Color.White.copy(alpha = 0.55f)
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
+            .heightIn(min = 92.dp)
             .graphicsLayer {
                 scaleX = escala
                 scaleY = escala
             }
             .sombra(Sombra.Baja, FormaAcceso)
             .clip(FormaAcceso)
-            .background(Colores.Papel)
-            .border(1.dp, Colores.Linea, FormaAcceso)
+            .background(fondo)
             .clickable(
                 interactionSource = interaccion,
                 indication = null,
@@ -508,47 +509,98 @@ private fun AccesoRapido(
                     alPulsar()
                 },
             )
-            .padding(horizontal = 4.dp, vertical = 12.dp),
+            .padding(12.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(40.dp)
-                .background(fondo, RoundedCornerShape(14.dp)),
+                .size(32.dp)
+                .background(fondoIcono, RoundedCornerShape(11.dp)),
         ) {
             Icon(
                 imageVector = icono,
                 contentDescription = null,
                 tint = colorIcono,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(18.dp),
             )
         }
         Text(
             text = texto,
-            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = Colores.Tinta,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 12.5.sp,
+                lineHeight = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+            ),
+            color = colorIcono,
+            modifier = Modifier.padding(top = 14.dp),
         )
     }
 }
 
 // ---------- Reparación en curso ----------
 
+private val SombraRinVacio = Shadow(
+    radius = 14.dp,
+    color = Colores.Tinta.copy(alpha = 0.25f),
+    offset = DpOffset(x = 0.dp, y = 12.dp),
+)
+
+/** Sin reparaciones: invita al primer análisis, en lavanda porque es el color de la IA. */
 @Composable
 private fun SinReparacion(alAnalizar: () -> Unit, modifier: Modifier = Modifier) {
-    Tarjeta(espacio = 6, modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "No tienes reparaciones en curso",
-            style = MaterialTheme.typography.titleMedium,
-            color = Colores.Tinta,
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 168.dp)
+            .clip(Formas.Tarjeta)
+            .background(Colores.LavandaSuave)
+            .border(1.dp, Colores.LavandaTexto.copy(alpha = 0.08f), Formas.Tarjeta),
+    ) {
+        LineasTecnicas(
+            tamano = 210.dp,
+            color = Colores.LavandaTexto.copy(alpha = 0.18f),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = 56.dp, y = (-44).dp),
         )
-        Text(
-            text = "Analiza un rin para recibir una cotización y solicitar la reparación en el taller.",
-            style = MaterialTheme.typography.bodySmall,
-            color = Colores.Tinta2,
+        RinIlustrado(
+            tamano = 128.dp,
+            conDano = true,
+            inclinacion = 20f,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .offset(x = 24.dp, y = 30.dp)
+                .clearAndSetSemantics { }
+                .dropShadow(CircleShape, SombraRinVacio),
         )
-        Enlace(texto = "Analizar un rin", alPulsar = alAnalizar)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(18.dp),
+        ) {
+            Etiqueta(texto = "Primer paso", tipo = TipoEtiqueta.Ia, icono = Iconos.Ia, pequena = true)
+            Text(
+                text = "Aún no tienes reparaciones",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = Colores.LavandaTexto,
+                modifier = Modifier
+                    .widthIn(max = 200.dp)
+                    .padding(top = 6.dp),
+            )
+            Text(
+                text = "Toma una foto del rin y en minutos ves posibles daños y un precio.",
+                style = MaterialTheme.typography.bodySmall,
+                color = Colores.LavandaTexto,
+                modifier = Modifier.widthIn(max = 196.dp),
+            )
+            Boton(
+                texto = "Analizar mi primer rin",
+                alPulsar = alAnalizar,
+                estilo = EstiloBoton.Lavanda,
+                tamano = TamanoBoton.Pequeno,
+                icono = Iconos.Camara,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
     }
 }
 
@@ -561,19 +613,81 @@ private fun FilaGaraje(
     alAgregarVehiculo: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // La fila llega hasta los bordes de la pantalla y se desliza de lado.
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = modifier
-            .anchoCompleto(margen = 20.dp)
-            .horizontalScroll(rememberScrollState())
-            .height(IntrinsicSize.Min)
-            .padding(horizontal = 20.dp, vertical = 4.dp),
-    ) {
-        vehiculos.forEach { vehiculo ->
-            TarjetaVehiculo(vehiculo = vehiculo, alPulsar = alVerGaraje, modifier = Modifier.fillMaxHeight())
+    if (vehiculos.isEmpty()) {
+        AgregarPrimerVehiculo(alPulsar = alAgregarVehiculo, modifier = modifier)
+    } else {
+        // La fila llega hasta los bordes de la pantalla y se desliza de lado.
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = modifier
+                .anchoCompleto(margen = 20.dp)
+                .horizontalScroll(rememberScrollState())
+                .height(IntrinsicSize.Min)
+                .padding(horizontal = 20.dp, vertical = 4.dp),
+        ) {
+            vehiculos.forEach { vehiculo ->
+                TarjetaVehiculo(vehiculo = vehiculo, alPulsar = alVerGaraje, modifier = Modifier.fillMaxHeight())
+            }
+            AgregarVehiculo(alPulsar = alAgregarVehiculo, modifier = Modifier.fillMaxHeight())
         }
-        AgregarVehiculo(alPulsar = alAgregarVehiculo, modifier = Modifier.fillMaxHeight())
+    }
+}
+
+/** Garaje vacío: una tarjeta mantequilla que explica para qué sirve agregar el carro. */
+@Composable
+private fun AgregarPrimerVehiculo(alPulsar: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(Formas.Tarjeta)
+            .background(Colores.MantequillaSuave)
+            .border(1.dp, Colores.MantequillaTexto.copy(alpha = 0.1f), Formas.Tarjeta)
+            .clickable(role = Role.Button, onClickLabel = "Agregar vehículo", onClick = alPulsar)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(48.dp)
+                .background(Colores.Mantequilla, RoundedCornerShape(16.dp)),
+        ) {
+            Icon(
+                imageVector = Iconos.Carro,
+                contentDescription = null,
+                tint = Colores.MantequillaTexto,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                text = "Agrega tu carro",
+                style = MaterialTheme.typography.titleSmall.copy(fontSize = 15.sp),
+                color = Colores.Tinta,
+            )
+            Text(
+                text = "El análisis usa el tamaño y el material de su rin.",
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.5.sp, lineHeight = 17.sp),
+                color = Colores.MantequillaTexto,
+            )
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(36.dp)
+                .background(Colores.Tinta, CircleShape),
+        ) {
+            Icon(
+                imageVector = Iconos.Agregar,
+                contentDescription = null,
+                tint = Colores.Crema,
+                modifier = Modifier.size(18.dp),
+            )
+        }
     }
 }
 
@@ -591,12 +705,12 @@ private fun TarjetaVehiculo(vehiculo: Vehiculo, alPulsar: () -> Unit, modifier: 
             modifier = Modifier
                 .padding(bottom = 6.dp)
                 .size(40.dp)
-                .background(Colores.Arena, RoundedCornerShape(14.dp)),
+                .background(Colores.Mantequilla, RoundedCornerShape(14.dp)),
         ) {
             Icon(
                 imageVector = Iconos.Carro,
                 contentDescription = null,
-                tint = Colores.Tinta,
+                tint = Colores.MantequillaTexto,
                 modifier = Modifier.size(22.dp),
             )
         }
@@ -613,10 +727,11 @@ private fun AgregarVehiculo(alPulsar: () -> Unit, modifier: Modifier = Modifier)
         modifier = modifier
             .widthIn(min = 120.dp)
             .clip(Formas.Tarjeta)
+            .background(Colores.MantequillaSuave)
             .drawBehind {
                 val trazo = 1.5.dp.toPx()
                 drawRoundRect(
-                    color = Colores.Linea2,
+                    color = Colores.MantequillaTexto.copy(alpha = 0.3f),
                     topLeft = Offset(trazo / 2, trazo / 2),
                     size = Size(size.width - trazo, size.height - trazo),
                     cornerRadius = CornerRadius(22.dp.toPx()),
@@ -632,13 +747,13 @@ private fun AgregarVehiculo(alPulsar: () -> Unit, modifier: Modifier = Modifier)
         Icon(
             imageVector = Iconos.Agregar,
             contentDescription = null,
-            tint = Colores.Tinta2,
+            tint = Colores.MantequillaTexto,
             modifier = Modifier.size(20.dp),
         )
         Text(
             text = "Agregar vehículo",
             style = MaterialTheme.typography.labelMedium,
-            color = Colores.Tinta2,
+            color = Colores.MantequillaTexto,
             textAlign = TextAlign.Center,
         )
     }

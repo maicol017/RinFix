@@ -11,6 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -19,8 +20,9 @@ import com.rinfix.app.diseno.Formas
 import kotlinx.coroutines.launch
 
 /**
- * Hoja que sube desde abajo, con el estilo de RinFix: fondo crema, esquinas de 28 dp
- * y una manija para arrastrarla.
+ * Hoja que sube desde abajo, con el estilo de RinFix: blanca para despegarse del fondo
+ * crema, con un oscurecido suave detrás, esquinas de 28 dp y una manija para arrastrarla.
+ * Dentro de la hoja, los campos de texto se pintan crema.
  *
  * El contenido recibe `cerrar`, que baja la hoja con su animación y luego llama a `alCerrar`.
  */
@@ -43,9 +45,9 @@ fun Hoja(
         onDismissRequest = alCerrar,
         sheetState = estado,
         shape = Formas.Hoja,
-        containerColor = Colores.Crema,
+        containerColor = Colores.Papel,
         contentColor = Colores.Tinta,
-        scrimColor = Colores.Tinta.copy(alpha = 0.32f),
+        scrimColor = Colores.Tinta.copy(alpha = 0.18f),
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -61,7 +63,9 @@ fun Hoja(
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 24.dp),
         ) {
-            contenido(cerrar)
+            CompositionLocalProvider(LocalFondoCampo provides Colores.Crema) {
+                contenido(cerrar)
+            }
         }
     }
 }

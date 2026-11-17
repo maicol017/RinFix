@@ -34,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -74,6 +75,12 @@ import com.rinfix.app.diseno.TemaRinFix
  * - `esContrasena` oculta el texto y agrega el ojo para mostrarlo.
  * - `tipoContenido` ayuda a los gestores de contraseñas a llenar el campo.
  */
+/**
+ * Fondo de los campos de texto. Blanco sobre la crema de las pantallas;
+ * las hojas, que son blancas, lo cambian a crema para que el campo se distinga.
+ */
+val LocalFondoCampo = staticCompositionLocalOf { Colores.Papel }
+
 @Composable
 fun Campo(
     valor: String,
@@ -95,6 +102,7 @@ fun Campo(
 ) {
     val interaccion = remember { MutableInteractionSource() }
     val enfocado by interaccion.collectIsFocusedAsState()
+    val fondoCampo = LocalFondoCampo.current
     var mostrarTexto by rememberSaveable { mutableStateOf(false) }
     val conError = error != null
 
@@ -195,7 +203,7 @@ fun Campo(
                                 cornerRadius = CornerRadius(20.dp.toPx()),
                             )
                         }
-                        .background(Colores.Papel, Formas.Campo)
+                        .background(fondoCampo, Formas.Campo)
                         .border(1.5.dp, colorBorde, Formas.Campo)
                         .padding(horizontal = 14.dp),
                 ) {

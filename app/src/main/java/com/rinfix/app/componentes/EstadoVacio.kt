@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +26,9 @@ import com.rinfix.app.diseno.TemaRinFix
 /**
  * Pantalla o sección sin contenido todavía. Dice qué falta y ofrece la acción para empezar,
  * en lugar de dejar un hueco.
+ *
+ * El círculo lleva el color de la sección: mantequilla para garaje y órdenes (por defecto),
+ * lavanda para análisis, menta para pagos.
  */
 @Composable
 fun EstadoVacio(
@@ -35,6 +39,8 @@ fun EstadoVacio(
     textoAccion: String? = null,
     iconoAccion: ImageVector? = null,
     alPulsarAccion: (() -> Unit)? = null,
+    fondoIcono: Color = Colores.Mantequilla,
+    colorIcono: Color = Colores.MantequillaTexto,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -47,13 +53,13 @@ fun EstadoVacio(
             modifier = Modifier
                 .size(96.dp)
                 .clip(CircleShape)
-                .background(Colores.Arena),
+                .background(fondoIcono),
         ) {
-            LineasTecnicas(tamano = 96.dp, color = Colores.Tinta.copy(alpha = 0.08f))
+            LineasTecnicas(tamano = 96.dp, color = colorIcono.copy(alpha = 0.15f))
             Icon(
                 imageVector = icono,
                 contentDescription = null,
-                tint = Colores.Tinta2,
+                tint = colorIcono,
                 modifier = Modifier.size(40.dp),
             )
         }

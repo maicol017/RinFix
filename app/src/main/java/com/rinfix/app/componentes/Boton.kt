@@ -67,6 +67,9 @@ enum class EstiloBoton {
 
     /** Acción menor sin fondo, por ejemplo «Ahora no». */
     Transparente,
+
+    /** Acción sobre una tarjeta lavanda (la IA y los análisis), por ejemplo «Analizar mi primer rin». */
+    Lavanda,
 }
 
 /** Tamaños del botón: alto y espacio a los lados. */
@@ -133,6 +136,10 @@ fun Boton(
         EstiloBoton.Transparente -> {
             fondo = Color.Transparent
             colorContenido = Colores.Tinta
+        }
+        EstiloBoton.Lavanda -> {
+            fondo = Colores.LavandaTexto
+            colorContenido = Colores.Papel
         }
     }
     val alto = if (estilo == EstiloBoton.Transparente) TamanoBoton.Pequeno.alto else tamano.alto
