@@ -30,10 +30,27 @@ data class Dano(
     /** Qué tan seguro está el análisis, de 0 a 1. */
     val confianza: Float,
     val caja: Caja? = null,
+    /** Explicación en palabras sencillas de lo que se ve. */
+    val explicacion: String = "",
+    /** `true` si la IA lo confirmó; `false` si el modelo lo marcó pero falta que el taller lo mida. */
+    val confirmado: Boolean = true,
 )
 
-/** Una línea de la cotización, con rango porque la foto no muestra todo. */
-data class LineaCotizacion(val servicio: String, val minimo: Long, val maximo: Long)
+/**
+ * Una línea de la cotización, con rango porque la foto no muestra todo.
+ * Si mínimo y máximo son 0, el servicio va incluido.
+ */
+data class LineaCotizacion(
+    val servicio: String,
+    val minimo: Long,
+    val maximo: Long,
+    /** «Rin 17", aleación» o «Solo si el taller confirma la deformación». */
+    val detalle: String? = null,
+    /** `true` si solo se cobra cuando el taller confirma el daño. */
+    val condicional: Boolean = false,
+) {
+    val incluido: Boolean get() = minimo == 0L && maximo == 0L
+}
 
 /**
  * Diagnóstico preliminar de una foto. No reemplaza la inspección del taller:
@@ -55,6 +72,15 @@ data class Diagnostico(
     val requiereInspeccion: Boolean,
     /** `true` mientras los resultados vengan de datos de ejemplo y no del análisis real. */
     val deEjemplo: Boolean,
+    /** Fotos enviadas, en el teléfono. Vacía en los diagnósticos de ejemplo del historial. */
+    val fotos: List<String> = emptyList(),
+    val gravedad: Gravedad = Gravedad.Moderada,
+    /** Gravedad de 0 (leve) a 1 (alta), para el indicador. */
+    val indiceGravedad: Float = 0.5f,
+    /** Taller cuyas tarifas se usaron. */
+    val taller: String = Catalogo.Taller,
+    /** Aviso de seguridad para mostrar destacado, si hace falta. */
+    val alerta: String? = null,
 ) {
     val precioMinimo: Long get() = cotizacion.sumOf { it.minimo }
     val precioMaximo: Long get() = cotizacion.sumOf { it.maximo }
