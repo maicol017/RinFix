@@ -15,7 +15,7 @@ object Rutas {
     // Cliente: pantallas de detalle (sin barra inferior)
     const val Garaje = "garaje?agregar={agregar}"
     const val Analizando = "analizando/{analisis}"
-    const val Agendar = "agendar"
+    const val Agendar = "agendar?diagnostico={diagnostico}"
     const val Resultado = "resultado/{diagnostico}"
     const val Seguimiento = "seguimiento/{orden}"
     const val Pago = "pago/{orden}"
@@ -23,6 +23,8 @@ object Rutas {
     fun analizar(idVehiculo: String? = null) = if (idVehiculo == null) "analizar" else "analizar?vehiculo=$idVehiculo"
     fun analizando(idAnalisis: String) = "analizando/$idAnalisis"
     fun garaje(agregar: Boolean = false) = if (agregar) "garaje?agregar=true" else "garaje"
+    fun agendar(idDiagnostico: String? = null) =
+        if (idDiagnostico == null) "agendar" else "agendar?diagnostico=$idDiagnostico"
     fun resultado(idDiagnostico: String) = "resultado/$idDiagnostico"
     fun seguimiento(idOrden: String) = "seguimiento/$idOrden"
     fun pago(idOrden: String) = "pago/$idOrden"

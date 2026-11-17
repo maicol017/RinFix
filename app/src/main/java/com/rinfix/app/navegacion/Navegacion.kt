@@ -29,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.rinfix.app.cliente.PantallaAgendar
 import com.rinfix.app.cliente.PantallaAnalizando
 import com.rinfix.app.cliente.PantallaAnalizar
 import com.rinfix.app.cliente.PantallaResultado
@@ -96,7 +97,7 @@ fun NavegacionRinFix(
                     alAnalizar = { controlador.navigate(Rutas.analizar()) { launchSingleTop = true } },
                     alVerOrden = { id -> controlador.navigate(Rutas.seguimiento(id)) },
                     alVerOrdenes = { controlador.irAPestana(Rutas.Ordenes) },
-                    alAgendar = { controlador.navigate(Rutas.Agendar) },
+                    alAgendar = { controlador.navigate(Rutas.agendar()) },
                     alPagar = { id -> controlador.navigate(Rutas.pago(id)) },
                     alAbrirAsistente = { controlador.irAPestana(Rutas.Asistente) },
                     alVerGaraje = { controlador.navigate(Rutas.garaje()) },
@@ -167,17 +168,30 @@ fun NavegacionRinFix(
                     modifier = Modifier.safeDrawingPadding(),
                 )
             }
-            composable(Rutas.Agendar) {
-                PorConstruir(
-                    titulo = "Agendar una revisión",
-                    descripcion = "Elegir fecha y hora para que el taller revise un rin.",
+            composable(
+                route = Rutas.Agendar,
+                arguments = listOf(
+                    navArgument("diagnostico") {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
+            ) {
+                PantallaAgendar(
                     alVolver = { controlador.popBackStack() },
+                    alVerSeguimiento = { id ->
+                        // Desde el seguimiento, atrás vuelve al Inicio y no a la solicitud ya enviada.
+                        controlador.navigate(Rutas.seguimiento(id)) { popUpTo(Rutas.Inicio) }
+                    },
+                    alIrAlInicio = { controlador.popBackStack(Rutas.Inicio, inclusive = false) },
+                    modifier = Modifier.safeDrawingPadding(),
                 )
             }
             composable(Rutas.Resultado) {
                 PantallaResultado(
                     alVolver = { controlador.popBackStack() },
-                    alSolicitar = { controlador.navigate(Rutas.Agendar) },
+                    alSolicitar = { id -> controlador.navigate(Rutas.agendar(id)) },
                     alPreguntar = { controlador.irAPestana(Rutas.Asistente) },
                     modifier = Modifier.safeDrawingPadding(),
                 )
