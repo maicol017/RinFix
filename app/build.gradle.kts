@@ -1,7 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Dirección del servidor de Vercel y clave de la app. Salen de local.properties (que no se sube
+// a GitHub) o de variables de entorno en GitHub Actions. Sin ellas, la app usa los datos de ejemplo.
+val propiedadesLocales = Properties().apply {
+    val archivo = rootProject.file("local.properties")
+    if (archivo.exists()) archivo.inputStream().use { load(it) }
+}
+
+fun configuracion(nombre: String): String =
+    (propiedadesLocales.getProperty(nombre) ?: System.getenv(nombre) ?: "").trim()
 
 android {
     namespace = "com.rinfix.app"
@@ -14,9 +26,12 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "RINFIX_SERVIDOR", "\"${configuracion("RINFIX_SERVIDOR")}\"")
+        buildConfigField("String", "RINFIX_CLAVE_APP", "\"${configuracion("RINFIX_CLAVE_APP")}\"")
     }
 
     buildTypes {
@@ -32,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
