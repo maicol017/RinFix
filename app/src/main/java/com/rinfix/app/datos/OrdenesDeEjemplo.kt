@@ -45,6 +45,29 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
         }
     }
 
+    override suspend fun registrarPago(idOrden: String, referencia: String) {
+        val ahora = LocalDateTime.now()
+        var pagada: Orden? = null
+        todas.update { lista ->
+            lista.map { orden ->
+                if (orden.id == idOrden) orden.copy(pagada = true).also { pagada = it } else orden
+            }
+        }
+        val orden = pagada ?: return
+        avisos.update { lista ->
+            lista + Notificacion(
+                id = "aviso-pago-$referencia",
+                usuarioId = orden.clienteId,
+                tipo = TipoNotificacion.Pago,
+                titulo = "Pago aprobado",
+                detalle = "${orden.codigo}, ${orden.total?.let(Formato::pesos).orEmpty()}",
+                fecha = ahora,
+                leida = true,
+                ordenId = orden.id,
+            )
+        }
+    }
+
     override suspend fun horasDisponibles(fecha: LocalDate): List<Horario> {
         delay(300)
         val ahora = LocalDateTime.now()
@@ -143,6 +166,11 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
                 entregaEstimada = dia(2, 16),
                 total = 210_000,
                 pagada = false,
+                cotizacion = listOf(
+                    LineaCotizacion("Reparación de rayones y pintura", 140_000, 140_000, "Rin 17\", aleación, acabado pintado"),
+                    LineaCotizacion("Enderezado del borde", 70_000, 70_000, "El taller confirmó la deformación"),
+                    LineaCotizacion("Balanceo", 0, 0),
+                ),
                 diagnosticoId = "diagnostico-1",
                 avances = listOf(
                     Avance(EtapaOrden.Solicitud, dia(-3, 9, 12), "El taller aceptó y agendó tu ingreso."),
@@ -187,6 +215,10 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
                 entregaEstimada = dia(-50, 17),
                 total = 95_000,
                 pagada = true,
+                cotizacion = listOf(
+                    LineaCotizacion("Enderezado del borde", 95_000, 95_000, "Rin 14\", acero"),
+                    LineaCotizacion("Balanceo", 0, 0),
+                ),
                 avances = listOf(
                     Avance(EtapaOrden.Solicitud, dia(-52, 8, 30)),
                     Avance(EtapaOrden.Inspeccion, dia(-52, 10, 15), registradoPor = "Carlos, técnico"),
@@ -238,6 +270,10 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
                 entregaEstimada = dia(0, 13),
                 total = 180_000,
                 pagada = false,
+                cotizacion = listOf(
+                    LineaCotizacion("Enderezado de 2 rines", 150_000, 150_000, "Rines 16\", aleación"),
+                    LineaCotizacion("Balanceo de 4 ruedas", 30_000, 30_000),
+                ),
                 avances = listOf(
                     Avance(EtapaOrden.Solicitud, dia(-6, 11, 0)),
                     Avance(EtapaOrden.Inspeccion, dia(-5, 9, 0), registradoPor = "Carlos, técnico"),

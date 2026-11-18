@@ -43,6 +43,9 @@ interface ServicioOrdenes {
     /** Horas del taller para recibir el rin ese día, con las que ya están ocupadas. */
     suspend fun horasDisponibles(fecha: LocalDate): List<Horario>
 
+    /** Marca la orden como pagada. Lo usa el servicio de pagos cuando un pago queda aprobado. */
+    suspend fun registrarPago(idOrden: String, referencia: String)
+
     /** Crea la orden con la etapa «Solicitud recibida» y avisa al taller. */
     suspend fun solicitar(usuario: Usuario, solicitud: SolicitudReparacion): Orden
 }

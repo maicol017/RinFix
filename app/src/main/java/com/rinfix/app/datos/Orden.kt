@@ -95,11 +95,19 @@ data class Orden(
     val cita: LocalDateTime? = null,
     /** Lo que el cliente le contó al taller al pedir la reparación. */
     val notas: String? = null,
+    /** Cotización que el taller confirmó tras la inspección: valores exactos, ya no rangos. */
+    val cotizacion: List<LineaCotizacion> = emptyList(),
 ) {
     val activa: Boolean get() = etapa != EtapaOrden.Entregada
 
     val ultimaActualizacion: LocalDateTime
         get() = avances.maxOfOrNull { it.fecha } ?: creada
+
+    /** Detalle del total: la cotización confirmada o, si no la hay, una sola línea con el servicio. */
+    val detalleTotal: List<LineaCotizacion>
+        get() = cotizacion.ifEmpty {
+            total?.let { listOf(LineaCotizacion(servicio = servicio, minimo = it, maximo = it)) }.orEmpty()
+        }
 
     /** Hay un total aprobado sin pagar. */
     val pagoPendiente: Boolean
