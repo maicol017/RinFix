@@ -19,6 +19,7 @@ object Rutas {
     const val Resultado = "resultado/{diagnostico}"
     const val Seguimiento = "seguimiento/{orden}"
     const val Pago = "pago/{orden}"
+    const val Comprobante = "comprobante/{comprobante}"
 
     fun analizar(idVehiculo: String? = null) = if (idVehiculo == null) "analizar" else "analizar?vehiculo=$idVehiculo"
     fun analizando(idAnalisis: String) = "analizando/$idAnalisis"
@@ -28,6 +29,7 @@ object Rutas {
     fun resultado(idDiagnostico: String) = "resultado/$idDiagnostico"
     fun seguimiento(idOrden: String) = "seguimiento/$idOrden"
     fun pago(idOrden: String) = "pago/$idOrden"
+    fun comprobante(idComprobante: String) = "comprobante/$idComprobante"
 
     // Taller
     const val Panel = "panel"

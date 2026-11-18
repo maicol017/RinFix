@@ -33,6 +33,8 @@ import com.rinfix.app.cliente.PantallaAgendar
 import com.rinfix.app.cliente.PantallaAnalizando
 import com.rinfix.app.cliente.PantallaAnalizar
 import com.rinfix.app.cliente.PantallaResultado
+import com.rinfix.app.cliente.PantallaComprobante
+import com.rinfix.app.cliente.PantallaPago
 import com.rinfix.app.cliente.PantallaSeguimiento
 import com.rinfix.app.cliente.PantallaAsistente
 import com.rinfix.app.cliente.PantallaGaraje
@@ -213,10 +215,30 @@ fun NavegacionRinFix(
                 )
             }
             composable(Rutas.Pago) {
-                PorConstruir(
-                    titulo = "Pagar servicio",
-                    descripcion = "Pago simulado con resumen de costos y comprobante.",
+                PantallaPago(
                     alVolver = { controlador.popBackStack() },
+                    alVerComprobante = { id ->
+                        controlador.navigate(Rutas.comprobante(id)) {
+                            popUpTo(Rutas.Pago) { inclusive = true }
+                        }
+                    },
+                    modifier = Modifier.safeDrawingPadding(),
+                )
+            }
+            composable(Rutas.Comprobante) {
+                PantallaComprobante(
+                    alVolver = { controlador.popBackStack() },
+                    alVerSeguimiento = { idOrden ->
+                        // Si se llegó desde el seguimiento, se vuelve a él; si no, se abre.
+                        if (controlador.previousBackStackEntry?.destination?.route == Rutas.Seguimiento) {
+                            controlador.popBackStack()
+                        } else {
+                            controlador.navigate(Rutas.seguimiento(idOrden)) {
+                                popUpTo(Rutas.Comprobante) { inclusive = true }
+                            }
+                        }
+                    },
+                    modifier = Modifier.safeDrawingPadding(),
                 )
             }
 
