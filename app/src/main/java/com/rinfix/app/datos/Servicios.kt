@@ -30,4 +30,6 @@ object Servicios {
     val analisis: ServicioAnalisis by lazy { AnalisisDeEjemplo() }
 
     val pagos: ServicioPagos by lazy { PagosDeEjemplo(ordenes) }
+
+    val asistente: ServicioAsistente by lazy { AsistenteDeEjemplo(ordenes, analisis, garaje) }
 }

@@ -21,6 +21,7 @@ data class ServicioTaller(
 object Catalogo {
 
     const val Taller = "Taller RinFix Cabecera"
+    const val DireccionTaller = "Cabecera del Llano, Bucaramanga"
 
     val servicios: Map<TipoDano, ServicioTaller> = mapOf(
         TipoDano.Rayon to ServicioTaller("Reparación de rayones y pintura", 120_000, 170_000, 1, 2),
