@@ -43,7 +43,9 @@ data class AvanceAnalisis(
     val error: String? = null,
     val deEjemplo: Boolean = false,
 ) {
-    fun estadoDe(paso: PasoAnalisis): PasoEnCurso = pasos.first { it.paso == paso }
+    /** El estado de un paso. Si este análisis no usa ese paso, cuenta como listo. */
+    fun estadoDe(paso: PasoAnalisis): PasoEnCurso =
+        pasos.firstOrNull { it.paso == paso } ?: PasoEnCurso(paso, EstadoPaso.Listo)
 }
 
 /**

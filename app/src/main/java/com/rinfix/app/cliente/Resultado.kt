@@ -108,6 +108,7 @@ import com.rinfix.app.diseno.sombra
 import kotlin.math.cos
 import kotlin.math.roundToLong
 import kotlin.math.sin
+import kotlin.math.roundToInt
 
 /**
  * Diagnóstico preliminar: foto con los hallazgos numerados, gravedad, cada hallazgo explicado,
@@ -200,30 +201,39 @@ private fun ContenidoResultado(
                 alElegir = { seleccionado = it },
                 modifier = Modifier.aparecer(visible, orden = 0),
             )
-            Leyenda(modifier = Modifier.aparecer(visible, orden = 1))
+            Leyenda(conModelo = diagnostico.deEjemplo, modifier = Modifier.aparecer(visible, orden = 1))
             TarjetaGravedad(diagnostico = diagnostico, modifier = Modifier.aparecer(visible, orden = 2))
 
             diagnostico.danos.forEachIndexed { indice, dano ->
                 TarjetaHallazgo(
                     numero = indice + 1,
                     dano = dano,
+                    conModelo = diagnostico.deEjemplo,
                     seleccionado = indice == seleccionado,
                     alPulsar = { seleccionado = indice },
                     modifier = Modifier.aparecer(visible, orden = 3 + indice),
                 )
             }
 
-            TarjetaCotizacion(
-                diagnostico = diagnostico,
-                modifier = Modifier.aparecer(visible, orden = 3 + diagnostico.danos.size),
-            )
+            if (diagnostico.danos.isEmpty()) {
+                SinDanosVisibles(modifier = Modifier.aparecer(visible, orden = 3))
+            } else {
+                TarjetaCotizacion(
+                    diagnostico = diagnostico,
+                    modifier = Modifier.aparecer(visible, orden = 3 + diagnostico.danos.size),
+                )
+            }
 
             diagnostico.alerta?.let { alerta ->
                 Aviso(titulo = "Recomendamos revisión presencial.", mensaje = alerta, tipo = TipoAviso.Error)
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Boton(texto = "Solicitar reparación", alPulsar = alSolicitar, modifier = Modifier.fillMaxWidth())
+                Boton(
+                    texto = if (diagnostico.danos.isEmpty()) "Pedir una revisión" else "Solicitar reparación",
+                    alPulsar = alSolicitar,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 Boton(
                     texto = "Preguntar al asistente",
                     alPulsar = alPreguntar,
@@ -385,15 +395,23 @@ private fun MarcaHallazgo(
 // ---------- Leyenda y gravedad ----------
 
 @OptIn(ExperimentalLayoutApi::class)
+/**
+ * Quién hizo cada parte. `conModelo` es para los diagnósticos de ejemplo, que cuentan cómo será
+ * con el modelo del teléfono; en el análisis real de hoy, Claude detecta e interpreta.
+ */
 @Composable
-private fun Leyenda(modifier: Modifier = Modifier) {
+private fun Leyenda(conModelo: Boolean, modifier: Modifier = Modifier) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier.fillMaxWidth(),
     ) {
-        ItemLeyenda(Iconos.Capas, "Detección en el teléfono")
-        ItemLeyenda(Iconos.Ia, "Interpretación de Claude")
+        if (conModelo) {
+            ItemLeyenda(Iconos.Capas, "Detección en el teléfono")
+            ItemLeyenda(Iconos.Ia, "Interpretación de Claude")
+        } else {
+            ItemLeyenda(Iconos.Ia, "Detección e interpretación de Claude")
+        }
         ItemLeyenda(Iconos.Recibo, "Precio del catálogo")
     }
 }
@@ -481,6 +499,7 @@ private fun IndicadorGravedad(indice: Float) {
 private fun TarjetaHallazgo(
     numero: Int,
     dano: Dano,
+    conModelo: Boolean,
     seleccionado: Boolean,
     alPulsar: () -> Unit,
     modifier: Modifier = Modifier,
@@ -525,10 +544,15 @@ private fun TarjetaHallazgo(
             }
         }
 
-        // Quién lo vio: el modelo del teléfono y la IA.
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Coincidencia(icono = Iconos.Celular, texto = "Modelo", confirma = true)
+        // Quién lo vio y qué tan seguro está.
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (conModelo) Coincidencia(icono = Iconos.Celular, texto = "Modelo", confirma = true)
             Coincidencia(icono = Iconos.Ia, texto = "Claude", confirma = dano.confirmado)
+            Text(
+                text = "Confianza ${(dano.confianza * 100).roundToInt()} %",
+                style = MaterialTheme.typography.labelSmall,
+                color = Colores.Tinta3,
+            )
         }
 
         if (dano.explicacion.isNotBlank()) {
@@ -579,6 +603,41 @@ private fun Coincidencia(icono: ImageVector, texto: String, confirma: Boolean) {
             tint = if (confirma) Colores.MentaTexto else Colores.LavandaTexto,
             modifier = Modifier.size(12.dp),
         )
+    }
+}
+
+/** Cuando Claude no ve daños: lo dice, sin cotización, y recuerda lo que una foto no muestra. */
+@Composable
+private fun SinDanosVisibles(modifier: Modifier = Modifier) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Colores.MentaSuave, RoundedCornerShape(26.dp))
+            .padding(18.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(40.dp)
+                .background(Colores.Menta, CircleShape),
+        ) {
+            Icon(Iconos.Hecho, contentDescription = null, tint = Colores.MentaTexto, modifier = Modifier.size(22.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "No vemos daños en la foto",
+                style = MaterialTheme.typography.titleMedium,
+                color = Colores.Tinta,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                text = "Si notas vibración, ruidos o pérdida de aire, pide una revisión: hay daños que una foto no muestra.",
+                style = MaterialTheme.typography.bodySmall,
+                color = Colores.MentaTexto,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
     }
 }
 
@@ -724,8 +783,12 @@ private fun resumenParaCompartir(diagnostico: Diagnostico): String = buildString
         val estado = if (dano.confirmado) dano.gravedad.nombre.lowercase() else "por confirmar"
         append("\n${indice + 1}. ${dano.descripcion} ($estado)")
     }
-    append("\nCotización estimada: ${Formato.rangoPesos(diagnostico.precioMinimo, diagnostico.precioMaximo)}")
-    append(", ${textoDias(diagnostico.diasMinimos, diagnostico.diasMaximos)}.")
+    if (diagnostico.danos.isEmpty()) {
+        append("\nNo se ven daños en la foto.")
+    } else {
+        append("\nCotización estimada: ${Formato.rangoPesos(diagnostico.precioMinimo, diagnostico.precioMaximo)}")
+        append(", ${textoDias(diagnostico.diasMinimos, diagnostico.diasMaximos)}.")
+    }
     append("\nEs preliminar: el taller confirma en la inspección.")
     if (diagnostico.deEjemplo) append("\n(Datos de ejemplo)")
 }
