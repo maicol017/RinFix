@@ -8,15 +8,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import com.rinfix.app.apertura.Apertura
+import com.rinfix.app.componentes.AvisoSinConexion
 import com.rinfix.app.datos.Servicios
 import com.rinfix.app.diseno.TemaRinFix
 import com.rinfix.app.navegacion.Puerta
@@ -56,6 +59,13 @@ class MainActivity : FragmentActivity() {
                         Puerta(logica = puerta, listo = aperturaTerminada)
                         if (!aperturaTerminada) {
                             Apertura(alTerminar = { aperturaTerminada = true })
+                        } else {
+                            // Encima de cualquier pantalla, debajo de la barra de estado.
+                            AvisoSinConexion(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .statusBarsPadding(),
+                            )
                         }
                     }
                 }
