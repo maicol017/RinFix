@@ -269,7 +269,12 @@ fun NavegacionRinFix(
                     modifier = espacioPestana,
                 )
             }
-            composable(Rutas.Agenda) { PantallaAgenda(modifier = espacioPestana) }
+            composable(Rutas.Agenda) {
+                PantallaAgenda(
+                    alVerTrabajo = { id -> controlador.navigate(Rutas.trabajo(id)) },
+                    modifier = espacioPestana,
+                )
+            }
             composable(Rutas.Trabajos) {
                 PantallaTrabajos(
                     alVerTrabajo = { id -> controlador.navigate(Rutas.trabajo(id)) },
