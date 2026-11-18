@@ -3,7 +3,6 @@ package com.rinfix.app.datos
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,12 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
 
     private val todas = MutableStateFlow(ordenesIniciales(ahora))
     private val avisos = MutableStateFlow(notificacionesIniciales(ahora))
-    private var siguienteCodigo = 1046
+
+    /** Horas bloqueadas por taller. */
+    private val bloqueos = MutableStateFlow(
+        mapOf(Taller to bloqueosIniciales(ahora, todas.value.mapNotNull { it.cita }.toSet())),
+    )
+    private var siguienteCodigo = 1048
 
     override fun ordenes(usuario: Usuario): Flow<List<Orden>> = todas.map { lista ->
         lista
@@ -70,15 +74,29 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
 
     override suspend fun horasDisponibles(fecha: LocalDate): List<Horario> {
         delay(300)
-        val ahora = LocalDateTime.now()
-        val horas = if (fecha.dayOfWeek == DayOfWeek.SATURDAY) HorasSabado else HorasSemana
-        return horas.map { hora ->
-            // Ocupadas de ejemplo: cambian con el día para que la agenda no se vea siempre igual.
-            val ocupada = (fecha.dayOfMonth + hora.hour) % 3 == 0
-            // Hoy, solo con al menos 2 horas de anticipación.
-            val pasada = fecha.atTime(hora).isBefore(ahora.plusHours(2))
-            Horario(hora, disponible = !ocupada && !pasada && fecha.dayOfWeek != DayOfWeek.SUNDAY)
+        val limite = LocalDateTime.now().plusHours(2)
+        val ocupadas = todas.value.mapNotNull { it.cita }.toSet() + bloqueos.value.values.flatten()
+        return Catalogo.horasDeIngreso(fecha).map { hora ->
+            val inicio = fecha.atTime(hora)
+            Horario(hora, disponible = inicio !in ocupadas && !inicio.isBefore(limite))
         }
+    }
+
+    override fun horasBloqueadas(usuario: Usuario): Flow<Set<LocalDateTime>> =
+        bloqueos.map { mapa -> mapa[usuario.taller].orEmpty() }
+
+    override suspend fun cambiarBloqueo(usuario: Usuario, hora: LocalDateTime, bloquear: Boolean): String? {
+        delay(350)
+        val taller = usuario.taller
+        if (usuario.rol != Rol.Taller || taller == null) return "Solo el taller puede cambiar su agenda."
+        if (hora.toLocalTime() !in Catalogo.horasDeIngreso(hora.toLocalDate())) return "Esa hora no es de atención."
+        if (hora.isBefore(LocalDateTime.now())) return "Esa hora ya pasó."
+        if (bloquear && todas.value.any { it.cita == hora }) return "Esa hora ya tiene una cita."
+        bloqueos.update { mapa ->
+            val actuales = mapa[taller].orEmpty()
+            mapa + (taller to if (bloquear) actuales + hora else actuales - hora)
+        }
+        return null
     }
 
     override suspend fun solicitar(usuario: Usuario, solicitud: SolicitudReparacion): Orden {
@@ -247,9 +265,25 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
 
         const val Taller = "Taller RinFix Cabecera"
 
-        /** Horas para recibir rines: de lunes a viernes mañana y tarde; sábados solo en la mañana. */
-        val HorasSemana: List<LocalTime> = listOf(8, 9, 10, 11, 14, 15, 16, 17).map { LocalTime.of(it, 0) }
-        val HorasSabado: List<LocalTime> = listOf(8, 9, 10, 11).map { LocalTime.of(it, 0) }
+        /** El día hábil número `dias` después de `hoy`, sin contar domingos. */
+        private fun diaHabil(hoy: LocalDate, dias: Int): LocalDate {
+            var dia = hoy
+            var faltan = dias
+            while (faltan > 0) {
+                dia = dia.plusDays(1)
+                if (dia.dayOfWeek != DayOfWeek.SUNDAY) faltan--
+            }
+            return dia
+        }
+
+        /** Dos horas bloqueadas de ejemplo en los próximos días, sin chocar con citas. */
+        fun bloqueosIniciales(ahora: LocalDateTime, citas: Set<LocalDateTime>): Set<LocalDateTime> {
+            val hoy = ahora.toLocalDate()
+            return listOf(diaHabil(hoy, 1).atTime(16, 0), diaHabil(hoy, 2).atTime(15, 0))
+                .map { Catalogo.proximaHoraDeIngreso(it) }
+                .filterNot { it in citas }
+                .toSet()
+        }
 
         fun ordenesIniciales(ahora: LocalDateTime): List<Orden> {
             val hoy = ahora.toLocalDate()
@@ -405,15 +439,60 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
                 entregaEstimada = null,
                 total = null,
                 pagada = false,
-                // Ingreso en un par de horas si aún es temprano; si no, mañana a primera hora.
-                cita = if (ahora.hour in 7..15) dia(0, ahora.hour + 2) else dia(1, 9),
+                // La primera hora de ingreso que un cliente podría agendar ahora.
+                cita = Catalogo.proximaHoraDeIngreso(ahora.plusHours(2)),
                 notas = "Cayó en un hueco y el timón vibra a más de 60 km/h.",
                 avances = listOf(
                     Avance(EtapaOrden.Solicitud, ahora.minusHours(3), "Solicitud nueva desde la app."),
                 ),
             )
 
-            return listOf(rf1042, rf0987, rf1041, rf1036, rf1045)
+            val rf1046 = Orden(
+                id = "orden-1046",
+                codigo = "RF-1046",
+                clienteId = "cliente-ejemplo-5",
+                cliente = "Ana Gómez",
+                vehiculo = "Toyota Corolla",
+                rin = "rin 16\" trasero izquierdo",
+                servicio = "Revisión en el taller",
+                taller = Taller,
+                tecnico = null,
+                etapa = EtapaOrden.Solicitud,
+                detalleEtapa = "Ingreso agendado",
+                creada = ahora.minusHours(20),
+                entregaEstimada = null,
+                total = null,
+                pagada = false,
+                cita = Catalogo.proximaHoraDeIngreso(diaHabil(hoy, 1).atTime(14, 0)),
+                notas = "Tiene un rayón largo y quiero saber si se puede pintar del mismo color.",
+                avances = listOf(
+                    Avance(EtapaOrden.Solicitud, ahora.minusHours(20), "Solicitud nueva desde la app."),
+                ),
+            )
+
+            val rf1047 = Orden(
+                id = "orden-1047",
+                codigo = "RF-1047",
+                clienteId = "cliente-ejemplo-6",
+                cliente = "Felipe Rojas",
+                vehiculo = "Nissan Kicks",
+                rin = "rin 17\" delantero derecho",
+                servicio = "Enderezado del borde",
+                taller = Taller,
+                tecnico = null,
+                etapa = EtapaOrden.Solicitud,
+                detalleEtapa = "Ingreso agendado",
+                creada = ahora.minusHours(6),
+                entregaEstimada = null,
+                total = null,
+                pagada = false,
+                cita = Catalogo.proximaHoraDeIngreso(diaHabil(hoy, 2).atTime(9, 0)),
+                avances = listOf(
+                    Avance(EtapaOrden.Solicitud, ahora.minusHours(6), "Solicitud nueva desde la app."),
+                ),
+            )
+
+            return listOf(rf1042, rf0987, rf1041, rf1036, rf1045, rf1046, rf1047)
         }
 
         fun notificacionesIniciales(ahora: LocalDateTime): List<Notificacion> {

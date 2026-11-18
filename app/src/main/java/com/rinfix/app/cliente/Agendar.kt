@@ -78,7 +78,6 @@ import com.rinfix.app.datos.Diagnostico
 import com.rinfix.app.datos.Formato
 import com.rinfix.app.datos.GarajeDeEjemplo
 import com.rinfix.app.datos.Horario
-import com.rinfix.app.datos.OrdenesDeEjemplo
 import com.rinfix.app.datos.Orden
 import com.rinfix.app.datos.PosicionRin
 import com.rinfix.app.diseno.Colores
@@ -595,8 +594,8 @@ private fun VistaPreviaAgendar() {
                 posicion = PosicionRin.DelanteroIzquierdo,
                 dias = dias,
                 dia = dias.first(),
-                horas = OrdenesDeEjemplo.HorasSemana.mapIndexed { i, hora -> Horario(hora, disponible = i % 3 != 0) },
-                hora = OrdenesDeEjemplo.HorasSemana[1],
+                horas = Catalogo.HorasSemana.mapIndexed { i, hora -> Horario(hora, disponible = i % 3 != 0) },
+                hora = Catalogo.HorasSemana[1],
             ),
             alVolver = {},
             alElegirVehiculo = {},

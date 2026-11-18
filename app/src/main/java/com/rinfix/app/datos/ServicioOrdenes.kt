@@ -64,8 +64,20 @@ interface ServicioOrdenes {
 
     suspend fun marcarNotificacionesLeidas(usuario: Usuario)
 
-    /** Horas del taller para recibir el rin ese día, con las que ya están ocupadas. */
+    /**
+     * Horas del taller para recibir el rin ese día. Una hora no está disponible si ya tiene
+     * una cita, si el taller la bloqueó o si faltan menos de 2 horas.
+     */
     suspend fun horasDisponibles(fecha: LocalDate): List<Horario>
+
+    /** Horas en que el taller no recibe rines, además de las que ya tienen cita. */
+    fun horasBloqueadas(usuario: Usuario): Flow<Set<LocalDateTime>>
+
+    /**
+     * El taller bloquea o libera una hora de ingreso. No se puede bloquear una hora con cita
+     * ni cambiar una que ya pasó. Devuelve el motivo si no se pudo, o `null` si quedó hecho.
+     */
+    suspend fun cambiarBloqueo(usuario: Usuario, hora: LocalDateTime, bloquear: Boolean): String?
 
     /** Marca la orden como pagada. Lo usa el servicio de pagos cuando un pago queda aprobado. */
     suspend fun registrarPago(idOrden: String, referencia: String)

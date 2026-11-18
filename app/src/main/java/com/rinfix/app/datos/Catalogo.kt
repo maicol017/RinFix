@@ -1,5 +1,9 @@
 package com.rinfix.app.datos
 
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.math.roundToLong
 
 /** Servicio del taller con su rango base para un rin de 17" de aleación. */
@@ -22,6 +26,26 @@ object Catalogo {
 
     const val Taller = "Taller RinFix Cabecera"
     const val DireccionTaller = "Cabecera del Llano, Bucaramanga"
+
+    /** Horas para recibir rines: de lunes a viernes mañana y tarde; sábados solo en la mañana. */
+    val HorasSemana: List<LocalTime> = listOf(8, 9, 10, 11, 14, 15, 16, 17).map { LocalTime.of(it, 0) }
+    val HorasSabado: List<LocalTime> = listOf(8, 9, 10, 11).map { LocalTime.of(it, 0) }
+
+    /** Horas en que el taller recibe rines ese día. Los domingos no abre. */
+    fun horasDeIngreso(fecha: LocalDate): List<LocalTime> = when (fecha.dayOfWeek) {
+        DayOfWeek.SUNDAY -> emptyList()
+        DayOfWeek.SATURDAY -> HorasSabado
+        else -> HorasSemana
+    }
+
+    /** La primera hora de ingreso igual o posterior a `desde`. */
+    fun proximaHoraDeIngreso(desde: LocalDateTime): LocalDateTime {
+        var dia = desde.toLocalDate()
+        while (true) {
+            horasDeIngreso(dia).map { dia.atTime(it) }.firstOrNull { !it.isBefore(desde) }?.let { return it }
+            dia = dia.plusDays(1)
+        }
+    }
 
     val servicios: Map<TipoDano, ServicioTaller> = mapOf(
         TipoDano.Rayon to ServicioTaller("Reparación de rayones y pintura", 120_000, 170_000, 1, 2),
