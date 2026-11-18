@@ -13,9 +13,14 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,14 +37,14 @@ import androidx.navigation.navArgument
 import com.rinfix.app.cliente.PantallaAgendar
 import com.rinfix.app.cliente.PantallaAnalizando
 import com.rinfix.app.cliente.PantallaAnalizar
-import com.rinfix.app.cliente.PantallaResultado
-import com.rinfix.app.cliente.PantallaComprobante
-import com.rinfix.app.cliente.PantallaPago
-import com.rinfix.app.cliente.PantallaSeguimiento
 import com.rinfix.app.cliente.PantallaAsistente
+import com.rinfix.app.cliente.PantallaComprobante
 import com.rinfix.app.cliente.PantallaGaraje
 import com.rinfix.app.cliente.PantallaInicio
 import com.rinfix.app.cliente.PantallaOrdenes
+import com.rinfix.app.cliente.PantallaPago
+import com.rinfix.app.cliente.PantallaResultado
+import com.rinfix.app.cliente.PantallaSeguimiento
 import com.rinfix.app.componentes.BarraInferior
 import com.rinfix.app.componentes.BarraSuperior
 import com.rinfix.app.componentes.BotonCentral
@@ -81,9 +86,13 @@ fun NavegacionRinFix(
     val mostrarBarra = rutaActual == null || pestanas.any { it.ruta == rutaActual }
 
     // Las pestañas dejan espacio abajo para que la barra flotante no tape su contenido.
-    val espacioPestana = Modifier
-        .safeDrawingPadding()
-        .padding(bottom = EspacioBarraInferior)
+    // Con el teclado abierto, el espacio de abajo es el del teclado (el mayor de los dos),
+    // así el campo del asistente queda justo encima del teclado.
+    val espacioPestana = Modifier.windowInsetsPadding(
+        WindowInsets.safeDrawing.union(
+            WindowInsets.navigationBars.add(WindowInsets(bottom = EspacioBarraInferior)),
+        ),
+    )
 
     Box(modifier = modifier.fillMaxSize()) {
         NavHost(
@@ -117,7 +126,16 @@ fun NavegacionRinFix(
                     modifier = espacioPestana,
                 )
             }
-            composable(Rutas.Asistente) { PantallaAsistente(modifier = espacioPestana) }
+            composable(Rutas.Asistente) {
+                PantallaAsistente(
+                    alAnalizar = { controlador.navigate(Rutas.analizar()) { launchSingleTop = true } },
+                    alVerOrden = { id -> controlador.navigate(Rutas.seguimiento(id)) },
+                    alVerDiagnostico = { id -> controlador.navigate(Rutas.resultado(id)) },
+                    alAgendar = { id -> controlador.navigate(Rutas.agendar(id)) },
+                    alPagar = { id -> controlador.navigate(Rutas.pago(id)) },
+                    modifier = espacioPestana,
+                )
+            }
             composable(
                 route = Rutas.Analizar,
                 arguments = listOf(

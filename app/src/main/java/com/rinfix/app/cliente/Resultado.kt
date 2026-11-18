@@ -140,7 +140,10 @@ fun PantallaResultado(
             diagnostico = diagnostico,
             alVolver = alVolver,
             alSolicitar = { alSolicitar(diagnostico.id) },
-            alPreguntar = alPreguntar,
+            alPreguntar = {
+                logica.preguntarAlAsistente()
+                alPreguntar()
+            },
             modifier = modifier,
         )
     }

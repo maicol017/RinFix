@@ -3,6 +3,7 @@ package com.rinfix.app.cliente
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rinfix.app.datos.ContextoPregunta
 import com.rinfix.app.datos.Diagnostico
 import com.rinfix.app.datos.Servicios
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,4 +28,14 @@ class ResultadoLogica(guardado: SavedStateHandle) : ViewModel() {
         }
         .map { Estado(cargando = false, diagnostico = it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Estado())
+
+    /** Deja la pregunta lista en el asistente, con este diagnóstico como contexto. */
+    fun preguntarAlAsistente() {
+        val usuario = Servicios.cuentas.usuarioActual.value ?: return
+        Servicios.asistente.enviar(
+            usuario = usuario,
+            texto = "¿Qué significa este diagnóstico?",
+            contexto = ContextoPregunta(idDiagnostico = idDiagnostico),
+        )
+    }
 }
