@@ -300,6 +300,9 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
                 entregaEstimada = null,
                 total = null,
                 pagada = false,
+                // Ingreso en un par de horas si aún es temprano; si no, mañana a primera hora.
+                cita = if (ahora.hour in 7..15) dia(0, ahora.hour + 2) else dia(1, 9),
+                notas = "Cayó en un hueco y el timón vibra a más de 60 km/h.",
                 avances = listOf(
                     Avance(EtapaOrden.Solicitud, ahora.minusHours(3), "Solicitud nueva desde la app."),
                 ),
@@ -330,6 +333,26 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
                     fecha = hoy.minusDays(2).atTime(11, 5),
                     leida = false,
                     ordenId = "orden-1042",
+                ),
+                Notificacion(
+                    id = "aviso-taller-1",
+                    usuarioId = "taller-1",
+                    tipo = TipoNotificacion.Avance,
+                    titulo = "Nueva solicitud RF-1045",
+                    detalle = "Chevrolet Onix, Jorge Prada",
+                    fecha = ahora.minusHours(3),
+                    leida = false,
+                    ordenId = "orden-1045",
+                ),
+                Notificacion(
+                    id = "aviso-taller-2",
+                    usuarioId = "taller-1",
+                    tipo = TipoNotificacion.Pago,
+                    titulo = "Mónica Salazar pagó en la app",
+                    detalle = "RF-1041, \$320.000",
+                    fecha = hoy.minusDays(3).atTime(10, 20),
+                    leida = true,
+                    ordenId = "orden-1041",
                 ),
                 Notificacion(
                     id = "aviso-3",
