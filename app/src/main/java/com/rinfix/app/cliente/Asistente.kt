@@ -1,9 +1,5 @@
 package com.rinfix.app.cliente
 
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
@@ -77,6 +73,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rinfix.app.componentes.Boton
+import com.rinfix.app.componentes.abrirEnMapas
 import com.rinfix.app.componentes.Etiqueta
 import com.rinfix.app.componentes.EstiloBoton
 import com.rinfix.app.componentes.FotoRin
@@ -138,27 +135,11 @@ fun PantallaAsistente(
                 is Destino.Seguimiento -> alVerOrden(destino.idOrden)
                 is Destino.VerDiagnostico -> alVerDiagnostico(destino.idDiagnostico)
                 is Destino.Pagar -> alPagar(destino.idOrden)
-                Destino.ComoLlegar -> abrirMapa(contexto)
+                Destino.ComoLlegar -> abrirEnMapas(contexto, Catalogo.DireccionTaller)
             }
         },
         modifier = modifier,
     )
-}
-
-/** Abre la app de mapas con la dirección del taller; si no hay, abre Google Maps en el navegador. */
-private fun abrirMapa(contexto: Context) {
-    val direccion = Uri.encode(Catalogo.DireccionTaller)
-    try {
-        contexto.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$direccion")))
-    } catch (e: ActivityNotFoundException) {
-        try {
-            contexto.startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$direccion")),
-            )
-        } catch (otro: ActivityNotFoundException) {
-            // Sin mapas ni navegador: no hay nada que abrir.
-        }
-    }
 }
 
 private val FormaPersona = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp, bottomEnd = 6.dp, bottomStart = 22.dp)
