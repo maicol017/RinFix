@@ -138,6 +138,111 @@ class OrdenesDeEjemplo(ahora: LocalDateTime = LocalDateTime.now()) : ServicioOrd
         return orden
     }
 
+    override suspend fun registrarAvance(usuario: Usuario, idOrden: String, avance: NuevoAvance): ResultadoAvance {
+        delay(700)
+        val orden = todas.value.firstOrNull { it.id == idOrden }
+            ?: return ResultadoAvance.Fallo("No encontramos este trabajo. Vuelve a la lista e inténtalo de nuevo.")
+        if (usuario.rol != Rol.Taller || orden.taller != usuario.taller) {
+            return ResultadoAvance.Fallo("Solo el taller de esta orden puede registrar avances.")
+        }
+        if (orden.etapa == EtapaOrden.Entregada) {
+            return ResultadoAvance.Fallo("Este trabajo ya se entregó.")
+        }
+        val cambia = avance.etapa != orden.etapa
+        if (cambia && avance.etapa != orden.etapa.siguiente) {
+            return ResultadoAvance.Fallo("Las etapas van en orden: la siguiente es «${orden.etapa.siguiente?.titulo}».")
+        }
+        val cotizacion = avance.cotizacion.orEmpty()
+        val cotizando = cambia && avance.etapa == EtapaOrden.Cotizacion
+        if (cotizando && cotizacion.sumOf { it.minimo } <= 0L) {
+            return ResultadoAvance.Fallo("Agrega al menos un servicio con su valor.")
+        }
+        val pagada = orden.pagada || avance.cobradoEnTaller
+        if (avance.etapa == EtapaOrden.Entregada && !pagada) {
+            return ResultadoAvance.Fallo("Registra el cobro antes de entregar el rin.")
+        }
+        val nota = avance.nota?.trim()?.ifBlank { null }
+        val detalle = avance.detalleEtapa?.trim()
+        if (!cambia && avance.fotos.isEmpty() && nota == null && (detalle == null || detalle == orden.detalleEtapa)) {
+            return ResultadoAvance.Fallo("Agrega una foto, una nota o lo que se está haciendo.")
+        }
+
+        val ahora = LocalDateTime.now()
+        val nombre = usuario.nombre.trim().substringBefore(' ')
+        val total = if (cotizando) cotizacion.sumOf { it.minimo } else orden.total
+        val registro = Avance(
+            etapa = avance.etapa,
+            fecha = ahora,
+            nota = nota ?: notaAutomatica(avance.etapa, cambia, total, avance.cobradoEnTaller),
+            fotos = avance.fotos,
+            registradoPor = "$nombre, técnico",
+        )
+        val actualizada = orden.copy(
+            etapa = avance.etapa,
+            detalleEtapa = when {
+                detalle != null -> detalle.ifBlank { null }
+                cambia -> detallePorDefecto(avance.etapa, pagada)
+                else -> orden.detalleEtapa
+            },
+            tecnico = orden.tecnico ?: nombre,
+            total = total,
+            cotizacion = if (cotizando) cotizacion else orden.cotizacion,
+            entregaEstimada = avance.entregaEstimada ?: orden.entregaEstimada,
+            pagada = pagada,
+            avances = orden.avances + registro,
+        )
+        todas.update { lista -> lista.map { if (it.id == idOrden) actualizada else it } }
+        avisos.update { it + avisoAlCliente(actualizada, cambia, avance.fotos.isNotEmpty(), ahora) }
+        return ResultadoAvance.Hecho(actualizada)
+    }
+
+    private fun notaAutomatica(etapa: EtapaOrden, cambia: Boolean, total: Long?, cobrado: Boolean): String? = when {
+        !cambia -> null
+        etapa == EtapaOrden.Cotizacion && total != null -> "Cotización confirmada: ${Formato.pesos(total)}."
+        etapa == EtapaOrden.Entregada && cobrado && total != null -> "Pagaste ${Formato.pesos(total)} en el taller."
+        else -> null
+    }
+
+    private fun detallePorDefecto(etapa: EtapaOrden, pagada: Boolean): String? = when (etapa) {
+        EtapaOrden.Solicitud -> "Ingreso agendado"
+        EtapaOrden.Inspeccion -> "Revisión del rin"
+        EtapaOrden.Cotizacion -> "Esperando turno de reparación"
+        EtapaOrden.Reparacion -> "En reparación"
+        EtapaOrden.Calidad -> "Balanceo y revisión final"
+        EtapaOrden.Lista -> if (pagada) "Listo para recoger" else "Cobro en el taller"
+        EtapaOrden.Entregada -> null
+    }
+
+    private fun avisoAlCliente(orden: Orden, cambia: Boolean, conFotos: Boolean, ahora: LocalDateTime): Notificacion {
+        val (tipo, titulo) = when {
+            !cambia && conFotos -> TipoNotificacion.Fotos to "Nuevas fotos de tu reparación"
+            !cambia -> TipoNotificacion.Avance to "Novedad en tu reparación"
+            else -> when (orden.etapa) {
+                EtapaOrden.Solicitud -> TipoNotificacion.Avance to "El taller recibió tu solicitud"
+                EtapaOrden.Inspeccion -> TipoNotificacion.Avance to "El taller recibió tu rin"
+                EtapaOrden.Cotizacion -> TipoNotificacion.Cotizacion to "Cotización confirmada por el taller"
+                EtapaOrden.Reparacion -> TipoNotificacion.Avance to "Empezó la reparación de tu rin"
+                EtapaOrden.Calidad -> TipoNotificacion.Avance to "Tu rin está en control de calidad"
+                EtapaOrden.Lista -> TipoNotificacion.Entrega to "Tu rin está listo para recoger"
+                EtapaOrden.Entregada -> TipoNotificacion.Entrega to "Recogiste tu rin"
+            }
+        }
+        val detalle = when {
+            cambia && orden.etapa == EtapaOrden.Cotizacion -> "${orden.codigo}, ${Formato.pesos(orden.total ?: 0)}"
+            else -> orden.detalleEtapa ?: "${orden.codigo}, ${orden.vehiculo}"
+        }
+        return Notificacion(
+            id = "aviso-${orden.id}-${orden.avances.size}",
+            usuarioId = orden.clienteId,
+            tipo = tipo,
+            titulo = titulo,
+            detalle = detalle,
+            fecha = ahora,
+            leida = false,
+            ordenId = orden.id,
+        )
+    }
+
     internal companion object {
 
         const val Taller = "Taller RinFix Cabecera"

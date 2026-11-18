@@ -19,6 +19,9 @@ enum class EtapaOrden(val titulo: String, val estado: String) {
     /** 1 a 7 */
     val numero: Int get() = ordinal + 1
 
+    /** La etapa que sigue, o `null` si ya se entregó. */
+    val siguiente: EtapaOrden? get() = entries.getOrNull(ordinal + 1)
+
     companion object {
         val total: Int get() = entries.size
     }

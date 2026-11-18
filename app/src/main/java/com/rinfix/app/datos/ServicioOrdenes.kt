@@ -19,6 +19,30 @@ data class SolicitudReparacion(
     val notas: String,
 )
 
+/**
+ * Lo que el trabajador registra en una orden: una novedad en la misma etapa
+ * (fotos, nota, qué se está haciendo) o el paso a la etapa siguiente.
+ */
+data class NuevoAvance(
+    /** La etapa actual (solo una novedad) o la siguiente (cambio de etapa). */
+    val etapa: EtapaOrden,
+    val nota: String? = null,
+    val fotos: List<FotoAvance> = emptyList(),
+    /** «Pintura y curado»: lo que se está haciendo ahora. */
+    val detalleEtapa: String? = null,
+    /** Solo al pasar a «Cotización aprobada»: valores exactos confirmados con el cliente. */
+    val cotizacion: List<LineaCotizacion>? = null,
+    val entregaEstimada: LocalDateTime? = null,
+    /** Solo al entregar: el cliente pagó en el taller. */
+    val cobradoEnTaller: Boolean = false,
+)
+
+/** Resultado de registrar un avance. Los mensajes de error ya están listos para mostrarse. */
+sealed interface ResultadoAvance {
+    data class Hecho(val orden: Orden) : ResultadoAvance
+    data class Fallo(val mensaje: String) : ResultadoAvance
+}
+
 /** Una hora del día para llevar el rin, libre u ocupada. */
 data class Horario(val hora: LocalTime, val disponible: Boolean)
 
@@ -48,4 +72,10 @@ interface ServicioOrdenes {
 
     /** Crea la orden con la etapa «Solicitud recibida» y avisa al taller. */
     suspend fun solicitar(usuario: Usuario, solicitud: SolicitudReparacion): Orden
+
+    /**
+     * El taller registra una novedad o pasa la orden a la etapa siguiente.
+     * Valida que las etapas vayan en orden, actualiza la orden y avisa al cliente.
+     */
+    suspend fun registrarAvance(usuario: Usuario, idOrden: String, avance: NuevoAvance): ResultadoAvance
 }
