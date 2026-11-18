@@ -343,16 +343,7 @@ Los pasos completos para publicarlo están en [`servidor/LEEME.md`](servidor/LEE
 
 ---
 
-## Créditos
 
-Hecho por **Miguel Ángel Solano Díaz** ([Codemikey21](https://github.com/Codemikey21)), estudiante de Ingeniería de Sistemas de la Universidad Autónoma de Bucaramanga (UNAB).
-
-- Análisis y asistente con [Claude](https://www.anthropic.com/claude), de Anthropic.
-- Datos de entrenamiento de [Roboflow Universe](https://universe.roboflow.com) con licencia CC BY 4.0.
-- El modelo YOLOv8 de Ultralytics tiene licencia AGPL-3.0; ver [`ml/README.md`](ml/README.md) antes de incluirlo en el APK.
-
-<div align="center">
-<br>
 <img src="docs/imagenes/logo.svg" alt="Logo de RinFix" width="56">
 <br>
 <sub>RinFix · Bucaramanga, Colombia</sub>
