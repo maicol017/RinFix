@@ -51,6 +51,7 @@ import com.rinfix.app.componentes.BotonCentral
 import com.rinfix.app.componentes.EspacioBarraInferior
 import com.rinfix.app.componentes.Iconos
 import com.rinfix.app.componentes.PantallaProvisional
+import com.rinfix.app.cuenta.ControlSesion
 import com.rinfix.app.cuenta.PantallaPerfil
 import com.rinfix.app.datos.Rol
 import com.rinfix.app.diseno.Colores
@@ -68,13 +69,13 @@ private val CurvaSuave = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
  * - Hacia una pantalla de detalle: entra desde la derecha; al volver, sale hacia la derecha.
  * - Analizar sube desde abajo, como una cámara que se abre, y oculta la barra inferior.
  *
- * `alCerrarSesion` lo usa Perfil para salir de la cuenta.
+ * `sesion` la usa Perfil para la huella y para salir de la cuenta.
  */
 @Composable
 fun NavegacionRinFix(
     rol: Rol,
     modifier: Modifier = Modifier,
-    alCerrarSesion: (() -> Unit)? = null,
+    sesion: ControlSesion? = null,
 ) {
     val controlador = rememberNavController()
     val entradaActual by controlador.currentBackStackEntryAsState()
@@ -268,8 +269,13 @@ fun NavegacionRinFix(
             // Ambos
             composable(Rutas.Perfil) {
                 PantallaPerfil(
+                    sesion = sesion,
+                    alVerGaraje = { controlador.navigate(Rutas.garaje()) },
+                    alVerOrdenes = { controlador.irAPestana(if (esCliente) Rutas.Ordenes else Rutas.Trabajos) },
+                    alAnalizar = { controlador.navigate(Rutas.analizar()) { launchSingleTop = true } },
+                    alVerDiagnostico = { id -> controlador.navigate(Rutas.resultado(id)) },
+                    alVerComprobante = { id -> controlador.navigate(Rutas.comprobante(id)) },
                     modifier = espacioPestana,
-                    alCerrarSesion = alCerrarSesion,
                 )
             }
         }

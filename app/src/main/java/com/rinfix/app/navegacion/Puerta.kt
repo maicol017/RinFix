@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.fragment.app.FragmentActivity
+import com.rinfix.app.cuenta.ControlSesion
 import com.rinfix.app.cuenta.PantallaActivarHuella
 import com.rinfix.app.cuenta.PantallaDesbloqueo
 import com.rinfix.app.datos.Rol
@@ -127,7 +128,21 @@ fun Puerta(logica: PuertaLogica, listo: Boolean, modifier: Modifier = Modifier) 
 
             Etapa.App -> {
                 val rol = remember { estado.usuario?.rol ?: Rol.Cliente }
-                NavegacionRinFix(rol = rol, alCerrarSesion = logica::cerrarSesion)
+                NavegacionRinFix(
+                    rol = rol,
+                    sesion = ControlSesion(
+                        huellaActiva = estado.huellaActiva,
+                        activandoHuella = estado.activando,
+                        errorHuella = estado.errorActivacion,
+                        activarHuella = ::pedirActivacion,
+                        desactivarHuella = {
+                            logica.desactivarHuella()
+                            Toast.makeText(contexto, "Desbloqueo con huella desactivado", Toast.LENGTH_SHORT).show()
+                        },
+                        limpiarErrorHuella = logica::limpiarErrorActivacion,
+                        cerrarSesion = logica::cerrarSesion,
+                    ),
+                )
             }
         }
     }

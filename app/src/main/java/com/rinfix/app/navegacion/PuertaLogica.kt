@@ -42,6 +42,8 @@ class PuertaLogica(aplicacion: Application) : AndroidViewModel(aplicacion) {
         val errorActivacion: String? = null,
         val errorDesbloqueo: String? = null,
         val huellaInvalida: Boolean = false,
+        /** `true` si esta cuenta tiene el desbloqueo con huella activado en este teléfono. */
+        val huellaActiva: Boolean = false,
         /** Correo para «Iniciar sesión» cuando la persona eligió «Usar contraseña». */
         val correoSugerido: String? = null,
     ) {
@@ -94,7 +96,9 @@ class PuertaLogica(aplicacion: Application) : AndroidViewModel(aplicacion) {
             val cifrado = cifrador.doFinal(usuario.id.toByteArray(Charsets.UTF_8))
             candado.guardar(dueno = usuario.id, cifrado = cifrado, vectorInicial = cifrador.iv)
             candado.marcarHuellaOfrecida(usuario.id)
-            _estado.update { it.copy(activando = false, ofrecerHuella = false, errorActivacion = null) }
+            _estado.update {
+                it.copy(activando = false, ofrecerHuella = false, errorActivacion = null, huellaActiva = true)
+            }
             true
         } catch (e: GeneralSecurityException) {
             olvidarHuella()
@@ -109,6 +113,18 @@ class PuertaLogica(aplicacion: Application) : AndroidViewModel(aplicacion) {
 
     fun activacionCancelada() {
         _estado.update { it.copy(activando = false) }
+    }
+
+    fun limpiarErrorActivacion() {
+        _estado.update { it.copy(errorActivacion = null) }
+    }
+
+    /** Desde Perfil: quita la huella y no la vuelve a ofrecer al entrar. Se puede activar otra vez desde ahí. */
+    fun desactivarHuella() {
+        val usuario = _estado.value.usuario ?: return
+        olvidarHuella()
+        candado.marcarHuellaOfrecida(usuario.id)
+        _estado.update { it.copy(huellaActiva = false, errorActivacion = null, activando = false) }
     }
 
     /** «Ahora no»: no se vuelve a ofrecer a esta cuenta en este teléfono. */
@@ -205,7 +221,8 @@ class PuertaLogica(aplicacion: Application) : AndroidViewModel(aplicacion) {
     private fun estadoInicial(): Estado {
         val actual = cuentas.usuarioActual.value
         if (actual != null && candado.existe() && candado.dueno() != actual.id) olvidarHuella()
-        return Estado(usuario = actual, bloqueada = actual != null && candado.existe())
+        val conHuella = actual != null && candado.existe()
+        return Estado(usuario = actual, bloqueada = conHuella, huellaActiva = conHuella)
     }
 
     private fun alCambiarUsuario(actual: Usuario?) {
@@ -219,7 +236,7 @@ class PuertaLogica(aplicacion: Application) : AndroidViewModel(aplicacion) {
                 val ofrecer = !candado.existe() &&
                     !candado.huellaOfrecida(actual.id) &&
                     Huella.disponible(getApplication<Application>())
-                _estado.value = Estado(usuario = actual, ofrecerHuella = ofrecer)
+                _estado.value = Estado(usuario = actual, ofrecerHuella = ofrecer, huellaActiva = candado.existe())
             }
 
             else -> _estado.update { it.copy(usuario = actual) }
@@ -230,7 +247,7 @@ class PuertaLogica(aplicacion: Application) : AndroidViewModel(aplicacion) {
     private fun marcarHuellaInvalida() {
         _estado.value.usuario?.let { candado.marcarHuellaOfrecida(it.id, ofrecida = false) }
         olvidarHuella()
-        _estado.update { it.copy(huellaInvalida = true, errorDesbloqueo = null) }
+        _estado.update { it.copy(huellaInvalida = true, errorDesbloqueo = null, huellaActiva = false) }
     }
 
     private fun olvidarHuella() {
