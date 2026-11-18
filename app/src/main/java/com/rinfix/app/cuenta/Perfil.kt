@@ -84,6 +84,7 @@ import com.rinfix.app.datos.Diagnostico
 import com.rinfix.app.datos.EstadoPago
 import com.rinfix.app.datos.Formato
 import com.rinfix.app.datos.Rol
+import com.rinfix.app.datos.Servidor
 import com.rinfix.app.datos.Usuario
 import com.rinfix.app.diseno.Colores
 import com.rinfix.app.diseno.Formas
@@ -756,11 +757,22 @@ private fun HojaComoFunciona(alCerrar: () -> Unit) {
     Hoja(alCerrar = alCerrar) {
         TituloHoja(titulo = "Cómo funciona el diagnóstico", detalle = "Del rin en la foto a la cotización, en cuatro pasos.")
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            listOf(
-                "Tomas hasta 3 fotos del rin, con buena luz y el rin completo.",
-                "Un modelo de visión marca las zonas donde ve posibles daños.",
-                "Claude explica en palabras sencillas lo que se ve y qué tan grave parece.",
-                "El precio sale de las tarifas del taller, nunca de la IA.",
+            (
+                if (Servidor.configurado) {
+                    listOf(
+                        "Tomas hasta 3 fotos del rin, con buena luz y el rin completo.",
+                        "Claude revisa las fotos en un servidor seguro y marca los daños que ve.",
+                        "Te explica en palabras sencillas cada daño y qué tan grave parece.",
+                        "El precio sale de las tarifas del taller, nunca de la IA.",
+                    )
+                } else {
+                    listOf(
+                        "Tomas hasta 3 fotos del rin, con buena luz y el rin completo.",
+                        "Un modelo de visión marca las zonas donde ve posibles daños.",
+                        "Claude explica en palabras sencillas lo que se ve y qué tan grave parece.",
+                        "El precio sale de las tarifas del taller, nunca de la IA.",
+                    )
+                }
             ).forEachIndexed { indice, paso ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
                     Box(
@@ -791,7 +803,11 @@ private fun HojaComoFunciona(alCerrar: () -> Unit) {
                 modifier = Modifier.padding(top = 6.dp),
             )
             Text(
-                text = "En esta versión los análisis son de ejemplo: los resultados no vienen de fotos analizadas de verdad.",
+                text = if (Servidor.configurado) {
+                    "Hoy Claude hace la detección y la explicación; el modelo del teléfono se suma más adelante."
+                } else {
+                    "En esta versión los análisis son de ejemplo: los resultados no vienen de fotos analizadas de verdad."
+                },
                 style = MaterialTheme.typography.labelSmall,
                 color = Colores.Tinta3,
             )

@@ -27,9 +27,15 @@ object Servicios {
 
     val garaje: ServicioGaraje by lazy { GarajeDeEjemplo() }
 
-    val analisis: ServicioAnalisis by lazy { AnalisisDeEjemplo() }
+    /** Con servidor configurado, Claude analiza las fotos de verdad; si no, se usa el ejemplo. */
+    val analisis: ServicioAnalisis by lazy {
+        if (Servidor.configurado) AnalisisConClaude() else AnalisisDeEjemplo()
+    }
 
     val pagos: ServicioPagos by lazy { PagosDeEjemplo(ordenes) }
 
-    val asistente: ServicioAsistente by lazy { AsistenteDeEjemplo(ordenes, analisis, garaje) }
+    /** Con servidor configurado, responde Claude; si no, las reglas de ejemplo. */
+    val asistente: ServicioAsistente by lazy {
+        if (Servidor.configurado) AsistenteConClaude(ordenes, analisis, garaje) else AsistenteDeEjemplo(ordenes, analisis, garaje)
+    }
 }

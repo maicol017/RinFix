@@ -22,13 +22,13 @@ import kotlinx.coroutines.launch
  * Asistente de EJEMPLO: responde con reglas sencillas usando los datos de la app
  * (órdenes, diagnósticos, garaje y catálogo del taller). No usa IA ni internet.
  *
- * Todas sus respuestas van marcadas como de ejemplo. Con el backend se cambia por el
- * asistente conectado a Claude, que recibe este mismo contexto desde el servidor.
+ * Todas sus respuestas van marcadas como de ejemplo. [AsistenteConClaude] hereda de aquí la
+ * conversación y cambia solo cómo se arma cada respuesta; si el servidor falla, vuelve a estas reglas.
  */
-class AsistenteDeEjemplo(
-    private val ordenes: ServicioOrdenes,
-    private val analisis: ServicioAnalisis,
-    private val garaje: ServicioGaraje,
+open class AsistenteDeEjemplo(
+    protected val ordenes: ServicioOrdenes,
+    protected val analisis: ServicioAnalisis,
+    protected val garaje: ServicioGaraje,
 ) : ServicioAsistente {
 
     private val alcance = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -44,17 +44,20 @@ class AsistenteDeEjemplo(
         if (pregunta.isEmpty() || conversaciones.value[usuario.id]?.escribiendo == true) return
         val mensaje = Mensaje(id = nuevoId(), autor = Autor.Persona, texto = pregunta, fecha = LocalDateTime.now())
         cambiar(usuario.id) { it.copy(mensajes = it.mensajes + mensaje, escribiendo = true) }
+        val historial = conversaciones.value[usuario.id]?.mensajes.orEmpty()
 
         respondiendo[usuario.id] = alcance.launch {
             val respuesta = try {
-                responder(usuario, pregunta, contexto)
+                responder(usuario, pregunta, contexto, historial)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Respuesta(texto = "No pude armar la respuesta. Inténtalo de nuevo en un momento.")
             }
-            // Pausa de «escribiendo»: un poco más larga si la respuesta es larga.
-            delay(PausaMinima + minOf(respuesta.texto.length * 5L, PausaExtraMaxima))
+            // Las reglas de ejemplo responden al instante: una pausa de «escribiendo» las hace naturales.
+            if (respuesta.deEjemplo) {
+                delay(PausaMinima + minOf(respuesta.texto.length * 5L, PausaExtraMaxima))
+            }
             val enviado = Mensaje(
                 id = nuevoId(),
                 autor = Autor.Asistente,
@@ -63,7 +66,7 @@ class AsistenteDeEjemplo(
                 piezas = respuesta.piezas,
                 acciones = respuesta.acciones,
                 sugerencias = respuesta.sugerencias,
-                deEjemplo = true,
+                deEjemplo = respuesta.deEjemplo,
             )
             cambiar(usuario.id) { it.copy(mensajes = it.mensajes + enviado, escribiendo = false) }
         }
@@ -82,7 +85,17 @@ class AsistenteDeEjemplo(
 
     // ---------- Reglas de respuesta ----------
 
-    private suspend fun responder(usuario: Usuario, pregunta: String, contexto: ContextoPregunta?): Respuesta {
+    /**
+     * Arma la respuesta a la última pregunta. `historial` trae la conversación completa,
+     * incluida la pregunta, para quien la necesite (Claude); las reglas solo miran la pregunta.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    protected open suspend fun responder(
+        usuario: Usuario,
+        pregunta: String,
+        contexto: ContextoPregunta?,
+        historial: List<Mensaje>,
+    ): Respuesta {
         val misOrdenes = ordenes.ordenes(usuario).first()
         val diagnosticos = analisis.historial(usuario).first()
         val vehiculos = garaje.vehiculos(usuario).first()
@@ -463,11 +476,13 @@ class AsistenteDeEjemplo(
     }
 
     /** Lo que arma cada regla antes de convertirse en mensaje. */
-    private data class Respuesta(
+    protected data class Respuesta(
         val texto: String,
         val piezas: List<Pieza> = emptyList(),
         val acciones: List<AccionRespuesta> = emptyList(),
         val sugerencias: List<String> = emptyList(),
+        /** `true` si salió de las reglas de ejemplo; `false` si la escribió Claude. */
+        val deEjemplo: Boolean = true,
     )
 
     private companion object {

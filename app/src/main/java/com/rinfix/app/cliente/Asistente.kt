@@ -96,6 +96,7 @@ import com.rinfix.app.datos.Mensaje
 import com.rinfix.app.datos.Orden
 import com.rinfix.app.datos.OrdenesDeEjemplo
 import com.rinfix.app.datos.Pieza
+import com.rinfix.app.datos.Servidor
 import com.rinfix.app.diseno.Colores
 import com.rinfix.app.diseno.Sombra
 import com.rinfix.app.diseno.TemaRinFix
@@ -271,7 +272,11 @@ private fun Encabezado(escribiendo: Boolean, hayMensajes: Boolean, alReiniciar: 
                 modifier = Modifier.semantics { heading() },
             )
             Text(
-                text = if (escribiendo) "Escribiendo…" else "Responde con datos de ejemplo",
+                text = when {
+                    escribiendo -> "Escribiendo…"
+                    Servidor.configurado -> "Con Claude"
+                    else -> "Responde con datos de ejemplo"
+                },
                 style = MaterialTheme.typography.labelSmall,
                 color = if (escribiendo) Colores.LavandaTexto else Colores.Tinta3,
             )
@@ -379,7 +384,7 @@ private fun Bienvenida(nombre: String, sugerencias: List<String>, alElegir: (Str
             Icon(Iconos.Informacion, contentDescription = null, tint = Colores.Tinta3, modifier = Modifier.size(16.dp))
             Text(
                 text = "El asistente orienta, pero no reemplaza la revisión del taller. " +
-                    "En esta versión responde con datos de ejemplo.",
+                    if (Servidor.configurado) "Responde con Claude." else "En esta versión responde con datos de ejemplo.",
                 style = MaterialTheme.typography.labelSmall,
                 color = Colores.Tinta3,
             )
@@ -438,7 +443,11 @@ private fun InicioConversacion(fecha: LocalDateTime) {
         ) {
             Icon(Iconos.Informacion, contentDescription = null, tint = Colores.LavandaTexto, modifier = Modifier.size(14.dp))
             Text(
-                text = "Respuestas de ejemplo. El asistente orienta, pero no reemplaza la revisión del taller.",
+                text = if (Servidor.configurado) {
+                    "Responde Claude. El asistente orienta, pero no reemplaza la revisión del taller."
+                } else {
+                    "Respuestas de ejemplo. El asistente orienta, pero no reemplaza la revisión del taller."
+                },
                 style = MaterialTheme.typography.labelSmall,
                 color = Colores.LavandaTexto,
             )
