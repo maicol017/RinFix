@@ -51,19 +51,19 @@ fun Orden.fechaClave(): LocalDateTime? = when (etapa) {
 
 /**
  * Tarjeta de un trabajo para el taller: qué rin, de quién, en qué etapa va,
- * qué fecha importa y si ya se cobró.
+ * qué fecha importa y si ya se cobró. Sin `alPulsar` no se puede tocar (encabezado del detalle).
  */
 @Composable
 fun TarjetaTrabajo(
     orden: Orden,
-    alPulsar: () -> Unit,
+    alPulsar: (() -> Unit)?,
     modifier: Modifier = Modifier,
     ahora: LocalDateTime = LocalDateTime.now(),
 ) {
     val atrasada = orden.atrasada(ahora)
     Tarjeta(
         alPulsar = alPulsar,
-        descripcionAccion = "Ver el trabajo ${orden.codigo}",
+        descripcionAccion = if (alPulsar != null) "Ver el trabajo ${orden.codigo}" else null,
         relleno = PaddingValues(16.dp),
         espacio = 0,
         modifier = modifier.fillMaxWidth(),

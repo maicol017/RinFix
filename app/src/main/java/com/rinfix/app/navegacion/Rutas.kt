@@ -38,8 +38,10 @@ object Rutas {
 
     // Taller: pantallas de detalle (sin barra inferior)
     const val Trabajo = "trabajo/{orden}"
+    const val RegistrarAvance = "avance/{orden}"
 
     fun trabajo(idOrden: String) = "trabajo/$idOrden"
+    fun registrarAvance(idOrden: String) = "avance/$idOrden"
 
     // Ambos roles
     const val Perfil = "perfil"

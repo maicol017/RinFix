@@ -12,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,17 +45,17 @@ import com.rinfix.app.cliente.PantallaPago
 import com.rinfix.app.cliente.PantallaResultado
 import com.rinfix.app.cliente.PantallaSeguimiento
 import com.rinfix.app.componentes.BarraInferior
-import com.rinfix.app.componentes.BarraSuperior
 import com.rinfix.app.componentes.BotonCentral
 import com.rinfix.app.componentes.EspacioBarraInferior
 import com.rinfix.app.componentes.Iconos
-import com.rinfix.app.componentes.PantallaProvisional
 import com.rinfix.app.cuenta.ControlSesion
 import com.rinfix.app.cuenta.PantallaPerfil
 import com.rinfix.app.datos.Rol
 import com.rinfix.app.diseno.Colores
 import com.rinfix.app.taller.PantallaAgenda
 import com.rinfix.app.taller.PantallaPanel
+import com.rinfix.app.taller.PantallaRegistrarAvance
+import com.rinfix.app.taller.PantallaTrabajo
 import com.rinfix.app.taller.PantallaTrabajos
 
 /** La misma curva del prototipo: arranca rápido y frena suave al llegar. */
@@ -278,11 +277,15 @@ fun NavegacionRinFix(
                 )
             }
             composable(Rutas.Trabajo) {
-                PorConstruir(
-                    titulo = "Detalle del trabajo",
-                    descripcion = "Cliente, cotización, línea de tiempo, cambio de etapa y fotos de avance.",
+                PantallaTrabajo(
                     alVolver = { controlador.popBackStack() },
+                    alRegistrarAvance = { id -> controlador.navigate(Rutas.registrarAvance(id)) },
+                    modifier = Modifier.safeDrawingPadding(),
                 )
+            }
+            // Se encarga sola de los bordes: la cámara ocupa toda la pantalla.
+            composable(Rutas.RegistrarAvance) {
+                PantallaRegistrarAvance(alVolver = { controlador.popBackStack() })
             }
 
             // Ambos
@@ -323,15 +326,6 @@ fun NavegacionRinFix(
                 },
             )
         }
-    }
-}
-
-/** Pantalla de detalle que todavía no existe: título, qué tendrá y botón para volver. */
-@Composable
-private fun PorConstruir(titulo: String, descripcion: String, alVolver: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
-        BarraSuperior(titulo = titulo, alVolver = alVolver)
-        PantallaProvisional(titulo = titulo, descripcion = descripcion)
     }
 }
 
