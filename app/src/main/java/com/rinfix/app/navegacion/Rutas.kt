@@ -36,6 +36,11 @@ object Rutas {
     const val Agenda = "agenda"
     const val Trabajos = "trabajos"
 
+    // Taller: pantallas de detalle (sin barra inferior)
+    const val Trabajo = "trabajo/{orden}"
+
+    fun trabajo(idOrden: String) = "trabajo/$idOrden"
+
     // Ambos roles
     const val Perfil = "perfil"
 }

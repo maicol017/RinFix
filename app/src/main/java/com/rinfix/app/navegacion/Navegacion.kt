@@ -262,9 +262,28 @@ fun NavegacionRinFix(
             }
 
             // Taller
-            composable(Rutas.Panel) { PantallaPanel(modifier = espacioPestana) }
+            composable(Rutas.Panel) {
+                PantallaPanel(
+                    alVerTrabajo = { id -> controlador.navigate(Rutas.trabajo(id)) },
+                    alVerTrabajos = { controlador.irAPestana(Rutas.Trabajos) },
+                    alVerAgenda = { controlador.irAPestana(Rutas.Agenda) },
+                    modifier = espacioPestana,
+                )
+            }
             composable(Rutas.Agenda) { PantallaAgenda(modifier = espacioPestana) }
-            composable(Rutas.Trabajos) { PantallaTrabajos(modifier = espacioPestana) }
+            composable(Rutas.Trabajos) {
+                PantallaTrabajos(
+                    alVerTrabajo = { id -> controlador.navigate(Rutas.trabajo(id)) },
+                    modifier = espacioPestana,
+                )
+            }
+            composable(Rutas.Trabajo) {
+                PorConstruir(
+                    titulo = "Detalle del trabajo",
+                    descripcion = "Cliente, cotización, línea de tiempo, cambio de etapa y fotos de avance.",
+                    alVolver = { controlador.popBackStack() },
+                )
+            }
 
             // Ambos
             composable(Rutas.Perfil) {
