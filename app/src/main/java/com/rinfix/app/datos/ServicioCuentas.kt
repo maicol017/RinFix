@@ -30,6 +30,9 @@ interface ServicioCuentas {
         contrasena: String,
     ): ResultadoCuenta
 
+    /** Cambia el nombre y el celular de la persona con sesión. El correo no se cambia aquí. */
+    suspend fun actualizarDatos(nombre: String, telefono: String?): ResultadoCuenta
+
     suspend fun salir()
 }
 

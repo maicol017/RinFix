@@ -13,4 +13,6 @@ data class Usuario(
     val correo: String,
     val rol: Rol,
     val taller: String? = null,
+    /** Celular de contacto, opcional: «3001234567». El taller lo usa si necesita avisar algo. */
+    val telefono: String? = null,
 )

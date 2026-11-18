@@ -104,6 +104,15 @@ class CuentasDeEjemplo(private val preferencias: SharedPreferences) : ServicioCu
         return ResultadoCuenta.Exito(nuevo)
     }
 
+    override suspend fun actualizarDatos(nombre: String, telefono: String?): ResultadoCuenta {
+        delay(700)
+        val actual = usuario.value ?: return ResultadoCuenta.Fallo("Tu sesión se cerró. Vuelve a entrar.")
+        val nuevo = actual.copy(nombre = nombre.trim(), telefono = telefono?.takeIf { it.isNotBlank() })
+        cuentas[actual.correo]?.let { cuentas[actual.correo] = it.copy(usuario = nuevo) }
+        abrirSesion(nuevo)
+        return ResultadoCuenta.Exito(nuevo)
+    }
+
     override suspend fun salir() {
         delay(200)
         preferencias.edit { clear() }
@@ -117,6 +126,7 @@ class CuentasDeEjemplo(private val preferencias: SharedPreferences) : ServicioCu
             putString(CORREO, nuevo.correo)
             putString(ROL, nuevo.rol.name)
             putString(TALLER, nuevo.taller)
+            putString(TELEFONO, nuevo.telefono)
         }
         usuario.value = nuevo
     }
@@ -130,6 +140,7 @@ class CuentasDeEjemplo(private val preferencias: SharedPreferences) : ServicioCu
             correo = preferencias.getString(CORREO, null).orEmpty(),
             rol = rol,
             taller = preferencias.getString(TALLER, null),
+            telefono = preferencias.getString(TELEFONO, null),
         )
     }
 
@@ -139,5 +150,6 @@ class CuentasDeEjemplo(private val preferencias: SharedPreferences) : ServicioCu
         const val CORREO = "sesion_correo"
         const val ROL = "sesion_rol"
         const val TALLER = "sesion_taller"
+        const val TELEFONO = "sesion_telefono"
     }
 }
