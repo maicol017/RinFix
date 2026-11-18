@@ -38,6 +38,7 @@ import com.rinfix.app.componentes.Boton
 import com.rinfix.app.componentes.EncabezadoSeccion
 import com.rinfix.app.componentes.Enlace
 import com.rinfix.app.componentes.EstadoVacio
+import com.rinfix.app.componentes.EsqueletoDetalle
 import com.rinfix.app.componentes.EstiloBoton
 import com.rinfix.app.componentes.Iconos
 import com.rinfix.app.componentes.LineaTiempo
@@ -92,6 +93,7 @@ fun PantallaTrabajo(
     when {
         estado.cargando -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Trabajo", alVolver = alVolver)
+            EsqueletoDetalle()
         }
         orden == null -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Trabajo", alVolver = alVolver)

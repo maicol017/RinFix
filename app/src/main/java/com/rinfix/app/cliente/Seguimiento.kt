@@ -47,6 +47,7 @@ import com.rinfix.app.componentes.BarraSuperior
 import com.rinfix.app.componentes.Boton
 import com.rinfix.app.componentes.BotonIcono
 import com.rinfix.app.componentes.EstadoVacio
+import com.rinfix.app.componentes.EsqueletoDetalle
 import com.rinfix.app.componentes.EstiloBoton
 import com.rinfix.app.componentes.Etiqueta
 import com.rinfix.app.componentes.FotoRin
@@ -86,6 +87,7 @@ fun PantallaSeguimiento(
     when {
         estado.cargando -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Seguimiento", alVolver = alVolver)
+            EsqueletoDetalle()
         }
         orden == null -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Seguimiento", alVolver = alVolver)

@@ -65,6 +65,7 @@ import com.rinfix.app.componentes.Aviso
 import com.rinfix.app.componentes.BarraSuperior
 import com.rinfix.app.componentes.Boton
 import com.rinfix.app.componentes.EstadoVacio
+import com.rinfix.app.componentes.EsqueletoDetalle
 import com.rinfix.app.componentes.FotoRin
 import com.rinfix.app.componentes.Iconos
 import com.rinfix.app.componentes.Logo
@@ -106,6 +107,7 @@ fun PantallaPago(
     when {
         estado.cargando -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Pagar servicio", alVolver = alVolver)
+            EsqueletoDetalle()
         }
         orden == null || total == null -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Pagar servicio", alVolver = alVolver)

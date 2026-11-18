@@ -49,6 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rinfix.app.componentes.BarraSuperior
 import com.rinfix.app.componentes.Boton
 import com.rinfix.app.componentes.EstadoVacio
+import com.rinfix.app.componentes.EsqueletoDetalle
 import com.rinfix.app.componentes.EstiloBoton
 import com.rinfix.app.componentes.Iconos
 import com.rinfix.app.datos.Comprobante
@@ -80,6 +81,7 @@ fun PantallaComprobante(
     when {
         estado.cargando -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Comprobante", alVolver = alVolver)
+            EsqueletoDetalle()
         }
         comprobante == null -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Comprobante", alVolver = alVolver)

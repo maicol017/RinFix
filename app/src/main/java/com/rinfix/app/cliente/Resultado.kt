@@ -79,6 +79,7 @@ import com.rinfix.app.componentes.BarraSuperior
 import com.rinfix.app.componentes.Boton
 import com.rinfix.app.componentes.BotonIcono
 import com.rinfix.app.componentes.EstadoVacio
+import com.rinfix.app.componentes.EsqueletoDetalle
 import com.rinfix.app.componentes.EstiloBoton
 import com.rinfix.app.componentes.Etiqueta
 import com.rinfix.app.componentes.FotoGuardada
@@ -125,6 +126,7 @@ fun PantallaResultado(
     when {
         estado.cargando -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Diagnóstico preliminar", alVolver = alVolver)
+            EsqueletoDetalle()
         }
         diagnostico == null -> Column(modifier = modifier.fillMaxSize()) {
             BarraSuperior(titulo = "Diagnóstico preliminar", alVolver = alVolver)
